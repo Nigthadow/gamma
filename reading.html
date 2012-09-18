@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="javascripts/jquery.js"></script>
+
+<script language="javascript">
+	$(document).ready(function() {
+		$("#timeline_plus_link").hover(
+		function(e) {
+			var y = e.pageY;
+			var top = this.offsetTop;
+			$("#timeline_plus_item").mousemove(
+				function(e) {
+					$("#timeline_plus_item").css("top", y);		
+				}
+			);
+//			alert('Y:' + y + ';' + top);
+				
+		}, 
+		function(e) {
+				
+		}
+		);
+		});
+</script>
+
+<title>Readings</title>
+<style >
+.fbTimelineCapsule {
+background: url(images/timeline-hor.gif) repeat-y center top;
+margin: 0;
+padding: 15px 0;
+position: relative;
+list-style: none;
+}
+
+.fbTimelineSpine {
+	cursor: none;
+	display: block;
+	height: 100%;
+	right: 50%;
+	margin-right: -10px;
+	outline: 0;
+	position: absolute;
+	top: 0;
+	width: 19px;
+	}
+	
+.spineHoverPlus {
+display: none;
+left: 3px;
+position: absolute;
+}
+
+.sp_bx2gsp {
+background-image: url(images/timeline-plus.gif);
+background-size: auto;
+background-repeat: no-repeat;
+display: inline-block;
+height: 15px;
+width: 15px;
+}
+
+.spineHoverPlusActive {
+display: block;
+}
+
+.fbTimelineSpine:hover 
+.spineHoverPlusActive {
+display: block;
+}
+
+</style>
+</head>
+
+<body>
+<div ></div>
+	<ol class="fbTimelineCapsule" style="border:1px solid #000; height:300px;">
+    	<li>
+			<a class="fbTimelineSpine" style="border:1px solid #900;" id="timeline_plus_link">
+            	<i class="spineHoverPlus sp_bx2gsp spineHoverPlusActive" style="top:40px;" id="timeline_plus_item"></i>
+            </a>
+   		 </li>
+    </ol>
+</body>
+</html>
