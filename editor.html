@@ -4,15 +4,34 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" type="text/css" href="stylesheets/webeditor.css" />
 <title>web editor</title>
+
+<script language="javascript" src="javascripts/jquery.js"></script>
+<script language="javascript" src="javascripts/jquery.webeditor.js"></script>
+<script language="javascript">	
+(function () {
+	'use strict'
+alert(this);	
+	}
+)();
+alert(this);
+
+	$(document).ready(function() {
+		$("#we-container-test").webeditor();
+		});
+</script>
 </head>
 
 <body>
-	<div class="we-container" >
+	<div class="we-container" id="_we-container">
     	<div class="we-menu">
         </div>
     	<div class="we-main-sep"/>
         <div class="we-edit-area" onClick="this.contentEditable='true';">
         </div>
     </div>
+    
+    <br />
+    <div id="we-container-test" style="width:200px; height:200px; border:1px solid #009;"></div>
+    
 </body>
 </html>
