@@ -7,31 +7,25 @@
 
 <script language="javascript" src="javascripts/jquery.js"></script>
 <script language="javascript" src="javascripts/jquery.webeditor.js"></script>
+<script src="javascripts/jquery.foundation.orbit.js"></script>
 <script language="javascript">	
-(function () {
-	'use strict'
-alert(this);	
-	}
-)();
-alert(this);
 
 	$(document).ready(function() {
-		$("#we-container-test").webeditor();
+		// $("#_we-container").webeditor();
 		});
 </script>
 </head>
 
 <body>
 	<div class="we-container" id="_we-container">
-    	<div class="we-menu">
+	    <div class="we-menu">
+            <div class="we-menu-item we-menu-cat we-menu-item-hover"><span>Normal</span>&nbsp;&nbsp;<a href="#">\/</a></div>
+            <div class="we-menu-item we-menu-sep"></div>
+            <div class="we-menu-item we-menu-font we-menu-item-hover">Arial</div>
         </div>
     	<div class="we-main-sep"/>
-        <div class="we-edit-area" onClick="this.contentEditable='true';">
-        </div>
     </div>
-    
     <br />
-    <div id="we-container-test" style="width:200px; height:200px; border:1px solid #009;"></div>
     
 </body>
 </html>

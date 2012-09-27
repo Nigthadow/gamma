@@ -14,8 +14,39 @@ div.we-container {
 div.we-menu {
 	width:100%;
 	height:55px;
+	margin:0px;
+	padding:0px;
+	position:relative;
 	background-color:#f5f5f5;
-	border-radius: 15px 15px 0px 0px;}
+	border-radius: 15px 15px 0px 0px;
+	}
+	
+div.we-menu-sep {
+	width:1px;
+	height:45px;
+	background-color:#CCC;}
+	
+div.we-menu-item {
+	margin-top:12px;
+	margin-left:10px;
+	height:30px;
+	line-height:30px;
+	position:relative;
+	float:left;
+	font-size:14px;
+	font-family:Arial, Helvetica, sans-serif}
+
+.we-menu-item-border {
+	border:1px solid #999;
+	border-radius: 4px;
+    -moz-border-radius: 4px;}	
+
+.we-menu-cat {
+	text-align:center;
+	width:66px;}
+.we-menu-font {
+	text-align:center;
+	width:66px;}
 	
 div.we-main-sep {
 	width:100%;
