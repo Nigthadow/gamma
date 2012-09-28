@@ -1,0 +1,8 @@
+.project
+*.so
+*.[ao]
+*.exe
+*.dll
+*~
+*.pyc
+*.swp
