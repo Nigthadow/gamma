@@ -190,3 +190,10 @@ div.we-edit-area {
 	height:80%;
 	width:96%;
 	border:1px solid #03C;}
+	
+.curvarrow {
+	width:20px;
+	height:3px;
+	border:1px solid #333;
+	border-radius: 10px 10px;
+    -moz-border-radius: 10px 10px;}

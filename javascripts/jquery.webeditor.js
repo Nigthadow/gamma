@@ -8,12 +8,10 @@
 		defaults: {
 			width: 700,
 			height: 500,
-			menuWidth: 700,
-			menuHeight: 55,
 		},
 		
-		menu: '<div class="we-main-sep"/>"',
-		mainSep: '<div class="we-menu"/>',
+		mainSep: '<div class="we-main-sep"/>"',
+		menu: '<div class="we-menu"/>',
 		editArea: '<div class="we-edit-area" onClick="this.contentEditable=\'true\';"></div>',
 		
 		init: function (element, options) {
@@ -37,7 +35,7 @@
 		
 		initMenu: function () {
 			var $menu = this.$menu;
-			$menu.css('width', this.options.menuWidth).css('height', this.options.menuHeight);
+			// $menu.css('width', this.options.menuWidth).css('height', this.options.menuHeight);
 		},
 		
 	};
