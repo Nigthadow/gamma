@@ -21,10 +21,8 @@
 			this.$menu = $(this.menu);
 			this.$mainSep = $(this.mainSep);
 			this.$editArea = $(this.editArea);
-			var ctnrWidth = this.$ctnr.css('width');
-			var ctnrHeight = this.$ctnr.css('height');
-			this.options = $.extend({'width': ctnrWidth, 'height': ctnrHeight}, this.defaults, options);
-			
+
+			this.options = $.extend(this.defaults, options);
 			this.initLayout();
 		},
 		
@@ -289,7 +287,7 @@
 	
 	$.fn.webeditor = function(options) {
 		return this.each(function() {
-			var we = $.extend(options, WEBEDITOR);
+			var we = $.extend({}, WEBEDITOR);
 			we.init(this, options);
 			}
 		);
