@@ -16,7 +16,7 @@ div.we-menu {
 	margin:0px;
 	padding:0px;
 	position:relative;
-	background-color: #FFF; /*f5f5f5 is better*/
+	background-color: #F5F5F5; /*f5f5f5 is better*/
 	border-radius: 15px 15px 0px 0px;}
 div.we-menu-sep {
 	width:1px;
@@ -24,7 +24,7 @@ div.we-menu-sep {
 	background-color:#CCC;}
 div.we-menu-item {
 	margin-top:12px;
-	margin-left:10px;
+	margin-left:8px;
 	height:30px;
 	line-height:30px;
 	position:relative;
@@ -55,32 +55,27 @@ div.we-menu-item {
 .icon-container-wide {
 	width: 25px;
 }
-.b {
-	width:17px;}
+.icon-spot {
+	width: 25px;
+}
 .b-icon {
 	width:11px;
 	height:16px;
 	background-position:-17px -5px;
-	left:10%;
+	left:25%;
 	top:25%;}
-.i {
-	width:17px;}
 .i-icon {
 	width:10px;
 	height:16px;
 	background-position:-32px -5px;
-	left:10%;
+	left:25%;
 	top:25%;}
-.u {
-	width:17px;}
 .u-icon {
 	width:14px;
 	height:16px;
 	background-position:-46px -5px;
-	left:5%;
+	left:20%;
 	top:25%;}
-.ol {
-	width:25px;}
 .ol-icon {
 	width:18px;
 	height:19px;
@@ -88,8 +83,6 @@ div.we-menu-item {
 	left:5%;
 	top:20%
 	}
-.ul {
-	width:25px;}
 .ul-icon {
 	width:19px;
 	height:19px;
@@ -97,24 +90,18 @@ div.we-menu-item {
 	left:5%;
 	top:21%
 	}
-.a-left {
-	width:25px;}
 .a-left-icon {
 	width:20px;
 	height:18px;
 	background-position:-159px -5px;
 	left:5%;
 	top:21%;}
-.a-center {
-	width:25px;}
 .a-center-icon {
 	width:20px;
 	height:18px;
 	background-position:-184px -5px;
 	left:5%;
 	top:21%;}
-.a-right {
-	width:25px;}
 .a-right-icon {
 	width:20px;
 	height:18px;
@@ -122,8 +109,6 @@ div.we-menu-item {
 	left:5%;
 	top:21%;
 	}
-.i-link {
-	width:25px;}
 .i-link-icon {
 	width:19px;
 	height:18px;
@@ -131,13 +116,11 @@ div.we-menu-item {
 	left:5%;
 	top:20%;
 	}
-.i-img {
-	width:16px;}
 .i-img-icon {
 	width:18px;
 	height:18px;
 	background-position:-265px -5px;
-	left:5%;
+	left:10%;
 	top:20%;
 	}
 .font-color {
@@ -182,7 +165,7 @@ div.we-menu-item {
 	right:5%;
 }
 .more {
-	width:25px;}
+	width:15px;}
 div.we-main-sep {
 	width:100%;
 	height:1px;
@@ -197,13 +180,6 @@ div.we-edit-area {
 	height:80%;
 	width:96%;
 	border:0px solid #03C;}
-	
-.curvarrow {
-	width:20px;
-	height:3px;
-	border:1px solid #333;
-	border-radius: 10px 10px;
-    -moz-border-radius: 10px 10px;}
 .menu-clue {
 	position:absolute;
 	background-color:#333;
@@ -225,13 +201,18 @@ div.we-edit-area {
 	
 	border-bottom: 5px solid black;}
 	
-.menu-item-selected-border {
+.menu-item-selected-shadow {
 	background-color: #ccc;
-	border-radius: 5px 5px;
+	-moz-box-shadow: inset 0 0 3px #333;
+    -webkit-box-shadow: inset 0 0 3px #333;
+    box-shadow: inset 0 0 3px #333;
+    border-radius: 5px 5px;
     -moz-border-radius: 5px 5px;
 }
-.menu-item-selected-shadow {
-    -moz-box-shadow: inset 0 0 10px #000000;
-    -webkit-box-shadow: inset 0 0 10px #000000;
-    box-shadow: inset 0 0 10px #000000;
+.menu-item-hover-shadow {
+    -moz-box-shadow: inset 0 0 10px #ccc;
+    -webkit-box-shadow: inset 0 0 10px #ccc;
+    box-shadow: inset 0 0 10px #ccc;
+    border-radius: 5px 5px;
+    -moz-border-radius: 5px 5px;
 }

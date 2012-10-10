@@ -1,5 +1,5 @@
 /**
- * a web editor implemented in the jQuery plugin way
+ * A simple web editor implemented in the jQuery plugin way
  *  
  */
 (function($) {
@@ -77,52 +77,52 @@
 				},
 				icon: {
 					"menu-font-b": {
-						itemClz: ['b'],
+						itemClz: ['icon-spot'],
 						iconClz: ['b-icon'],
 						clue: "粗体",
 					},
 					"menu-font-i": {
-						itemClz: ['i'],
+						itemClz: ['icon-spot'],
 						iconClz: ['i-icon'],
 						clue: "斜体",
 					},
 					"menu-font-u": {
-						itemClz: ['u'],
+						itemClz: ['icon-spot'],
 						iconClz: ['u-icon'],
 						clue: "下划线",
 					},
 					"menu-ol": {
-						itemClz: ['ol'],
+						itemClz: ['icon-spot'],
 						iconClz: ['ol-icon'],
 						clue: "有序序列",
 					},
 					"menu-ul": {
-						itemClz: ['ul'],
+						itemClz: ['icon-spot'],
 						iconClz: ['ul-icon'],
 						clue: "无序序列",
 					},
 					"menu-aleft": {
-						itemClz: ['a-left'],
+						itemClz: ['icon-spot'],
 						iconClz: ['a-left-icon'],
 						clue: "左对齐",
 					},
 					"menu-acenter": {
-						itemClz: ['a-center'],
+						itemClz: ['icon-spot'],
 						iconClz: ['a-center-icon'],
 						clue: "居中对齐",
 					},
-					"menu-right": {
-						itemClz: ['a-right'],
+					"menu-aright": {
+						itemClz: ['icon-spot'],
 						iconClz: ['a-right-icon'],
 						clue: "右对齐",
 					},
 					"menu-ilink": {
-						itemClz: ['i-link'],
+						itemClz: ['icon-spot'],
 						iconClz: ['i-link-icon'],
 						clue: "插入链接",
 					},
 					"menu-iimg": {
-						itemClz: ['i-img'],
+						itemClz: ['icon-spot'],
 						iconClz: ['i-img-icon'],
 						clue: "插入图片",
 					},
@@ -153,7 +153,6 @@
 				if(content) {
 					return div.text(content + "");	
 				}
-				
 				return div;
 			},
 			
@@ -161,11 +160,9 @@
 				if(id) {
 					ele.attr('id', id);
 				}
-				
 				for(var i in classes) {
 					ele.addClass(classes[i]);	
 				}
-				
 				return ele;
 			},
 			
@@ -188,11 +185,9 @@
 					}
 					title.appendTo(item);
 				}
-				
 				if(needArrow) {
 					this.getArrow().appendTo(item);
-				}
-				
+				}				
 				return item;
 			},
 			
@@ -239,25 +234,39 @@
 				return item;
 			},
 			
+			getCoordinate: function(ele) {
+				var marginLeft = parseInt(ele.css("margin-left")),
+				marginTop = parseInt(ele.css("margin-top")),
+				width = parseInt(ele.css("width")),
+				height = parseInt(ele.css("height")),
+				position = ele.position(),
+				left = position.left,
+				top = position.top;
+				var leftOffset = left + marginLeft;
+				var topOffset = top + marginTop + height;
+				
+				return [leftOffset, topOffset];
+			},
+			
 			/**
 			 * 
  			 * @param {jQuery Object} ele
  			 * @param {string} msg: clue message
 			 */
 			addClueMsg: function(ele, msg) {
-				var getdiv = this.getDiv;
+				var getdiv = this.getDiv, coor = this.getCoordinate;
 				ele.hover(
 					function() {
-						var marginLeft = parseInt($(this).css("margin-left")),
-						marginTop = parseInt($(this).css("margin-top")),
-						width = parseInt($(this).css("width")),
-						height = parseInt($(this).css("height")),
-						position = $(this).position(),
-						left = position.left,
-						top = position.top;
-						var leftOffset = left + marginLeft;
-						var topOffset = top + marginTop + height + 5;
+						// add shadown
+						$(this).addClass("menu-item-hover-shadow");
+						
+						// add clue message
+						var co = coor($(this)); 
+						var leftOffset = co[0];
+						var topOffset = co[1] + 5;
 						var clue = getdiv(msg).addClass("menu-clue").css("left", leftOffset + "px").css("top", topOffset + "px").appendTo($(this).parent());
+						
+						// add arrow on top of clue rectangle
 						var clueWidth = parseInt(clue.css('width'))
 						leftOffset = leftOffset + clueWidth / 3;
 						topOffset = topOffset - 3;
@@ -265,12 +274,9 @@
 					}, 
 					function() {
 						$("div[class|=menu-clue]", $(this).parent()).remove();
+						$(this).removeClass("menu-item-hover-shadow");
 					}
 				);
-			},
-			
-			toggleBorder: function(ele) {
-				$(this).toggleClass("menu-item-selected");
 			},
 		},
 		initMenuEvents: {
@@ -282,23 +288,77 @@
 				map: {
 					click: ['order', 'align'],
 				},
-				
-				getMutexGroupsByEventAndItem: function(eventName, item) {
-					// TODO 这里应该用event name 和 item一起来选择互斥组
-					var groupNames = this.map[eventName];
-					var groups = [];
-					if(groupNames) {
-						for(var i in groupNames) {
-							var group = this.groups[groupNames[i]];
-						}
-						
-						groups.push(this.groups[groupNames[i]]);
-					}
+				getMutexGroupsByEventAndItem: function(eventName, ele) {
+					var groupNames = this.map[eventName], itemId = ele.attr('id'), groups = [];
+					if (!groupNames || !itemId) return groups;
 					
+					for(var i in groupNames) {
+						var group = this.groups[groupNames[i]];
+						if($.inArray(itemId, group) > -1) groups.push(group);
+					}
 					return groups;
 				},
 			},
+			
+			toggleSelected: function(ele) {
+				ele.toggleClass("menu-item-selected-shadow");
+				// toggle attribute selected
+				if(ele.attr('selected')) return ele.removeAttr('selected');
+				else return ele.attr('selected', '');
+			},
+			
+			unselected: function(ele) {
+				return ele.removeClass("menu-item-selected-shadow");
+			},
+			
+			eventEngine: function(event) {
+				var data = event.data;
+				var me = $(this);
+				var id = me.attr('id');
+				if(data.mutex) { // mutex logic processing
+					var groups = data.mutex.group;
+					var handlers = data.mutex.handlers
+					for(var i in groups) {
+						var group = groups[i];
+						for (var k in group) {
+							if(id == group[k]) continue;
+							var item = $('#' + group[k]);
+							for(var j in handlers) {
+								var handler = handlers[j];
+								handler(item);
+							};
+						};
+					};
+				}; // end of mutex logic processing
+				
+				if(data.uiHandlers) { // UI processing
+					var handlers = data.uiHandlers
+					for(var i in handlers) {
+						var handler = handlers[i];
+						handler(me);
+					}
+				}; // end of UI processing
+				
+				if(data.formatHandlers) { // format processing
+					var handlers = data.formatHandlers
+					for(var i in handlers) {
+						var handler = handlers[i];
+						handler(me);
+					}
+				}; // end of format processing			
+			},			
+			
+			bindClick: function(ele, mutexHandlers, uiHandlers, formatHanlders) {
+				var mg = this.mutex.getMutexGroupsByEventAndItem('click', ele);
+				return ele.on('click', {'mutex': {'group': mg, 'handlers': mutexHandlers}, 'uiHandlers': uiHandlers, 'formatHandlers': formatHanlders}, this.eventEngine);
+			},
+			
 			bindEvents4Cat: function(ele) {
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+				};
+				var formatHandlers = [formatHandler];
+				this.bindClick(ele, [], [this.toggleSelected], formatHandlers);
 				return ele;
 			},
 			bindEvents4FontFamily: function(ele) {
@@ -310,16 +370,76 @@
 			bindEvents4FontColor: function(ele) {return ele;},
 			bindEvents4FontBgColor: function(ele) {return ele;},
 			bindEvents4U: function(ele) {
-				var mutex = this.mutex.getMutexGroupsByEventAndItem('click', ele);
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+				};
+				
+				var formatHandlers = [formatHandler];
+				this.bindClick(ele, [], [this.toggleSelected], formatHandlers);
 				return ele;
 			},
-			bindEvents4I: function(ele) {return ele;},
-			bindEvents4B: function(ele) {return ele;},
-			bindEvents4Ol: function(ele) {return ele;},
-			bindEvents4Ul: function(ele) {return ele;},
-			bindEvents4AlignLeft: function(ele) {return ele;},
-			bindEvents4AlignCenter: function(ele) {return ele;},
-			bindEvents4AlignRight: function(ele) {return ele;},
+			bindEvents4I: function(ele) {
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+				};
+				var formatHandlers = [formatHandler];
+				this.bindClick(ele, [], [this.toggleSelected], formatHandlers);
+				return ele;
+			},
+			bindEvents4B: function(ele) {
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+				};
+				
+				var formatHandlers = [formatHandler];
+				this.bindClick(ele, [], [this.toggleSelected], formatHandlers);
+				return ele;
+			},
+			bindEvents4Ol: function(ele) {
+				var mutexHandlers = [this.unselected];
+				var uiHandlers = [this.toggleSelected];
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+				};
+				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				return ele;
+			},
+			bindEvents4Ul: function(ele) {
+				var mutexHandlers = [this.unselected];
+				var uiHandlers = [this.toggleSelected];
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+				};
+				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				return ele;
+			},
+			bindEvents4AlignLeft: function(ele) {
+				var mutexHandlers = [this.unselected];
+				var uiHandlers = [this.toggleSelected];
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+				};
+				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				return ele;
+			},
+			bindEvents4AlignCenter: function(ele) {
+				var mutexHandlers = [this.unselected];
+				var uiHandlers = [this.toggleSelected];
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+				};
+				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				return ele;
+			},
+			bindEvents4AlignRight: function(ele) {
+				var mutexHandlers = [this.unselected];
+				var uiHandlers = [this.toggleSelected];
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+				};
+				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				return ele;
+			},
 			bindEvents4InsertLink: function(ele) {return ele;},
 			bindEvents4InsertImg: function(ele) {return ele;},
 			bindEvents4More: function(ele) {return ele;}
@@ -394,7 +514,7 @@
 				return this.me.bindEvents4AlignCenter(item);
 			},
 			initMenuAlignRight: function() {
-				var id = 'menu-right';
+				var id = 'menu-aright';
 				var item = this.ml.getMenuItemById(id);
 				return this.me.bindEvents4AlignRight(item);
 			},
