@@ -17,8 +17,7 @@ div.we-menu {
 	padding:0px;
 	position:relative;
 	background-color: #FFF; /*f5f5f5 is better*/
-	border-radius: 15px 15px 0px 0px;
-	}
+	border-radius: 15px 15px 0px 0px;}
 div.we-menu-sep {
 	width:1px;
 	height:45px;
@@ -36,9 +35,12 @@ div.we-menu-item {
 .we-menu-item-border {
 	border:1px solid #999; /*f5f5f5*/
 	border-radius: 4px;
-    -moz-border-radius: 4px;}		
+    -moz-border-radius: 4px;}
+.we-menu-item-toggle {
+	background-color: red;
+}		
 .we-menu-icon {
-	background:url(../images/img-web-editor.jpg) no-repeat;
+	background:url(../images/img-web-editor.gif) no-repeat;
 	position:absolute;
 }
 .we-menu-cat {
@@ -47,130 +49,135 @@ div.we-menu-item {
 	width:66px;}
 .we-menu-size {
 	width:45px;}
+.icon-container-narrow {
+	width: 17px;
+}
+.icon-container-wide {
+	width: 25px;
+}
 .b {
 	width:17px;}
+.b-icon {
+	width:11px;
+	height:16px;
+	background-position:-17px -5px;
+	left:10%;
+	top:25%;}
 .i {
 	width:17px;}
 .i-icon {
-	width:12px;
+	width:10px;
 	height:16px;
-	background-position:-36px -6px;
+	background-position:-32px -5px;
 	left:10%;
 	top:25%;}
 .u {
 	width:17px;}
+.u-icon {
+	width:14px;
+	height:16px;
+	background-position:-46px -5px;
+	left:5%;
+	top:25%;}
 .ol {
 	width:25px;}
 .ol-icon {
-	width:21px;
-	height:20px;
-	background-position:-109px -4px;
+	width:18px;
+	height:19px;
+	background-position:-102px -5px;
 	left:5%;
 	top:20%
 	}
 .ul {
 	width:25px;}
 .ul-icon {
-	width:21px;
-	height:20px;
-	background-position:-134px -5px;
+	width:19px;
+	height:19px;
+	background-position:-127px -5px;
 	left:5%;
-	top:22%
+	top:21%
 	}
 .a-left {
 	width:25px;}
 .a-left-icon {
-	width:21px;
+	width:20px;
 	height:18px;
-	background-position:-159px -6px;
+	background-position:-159px -5px;
 	left:5%;
-	top:22%
-	}
+	top:21%;}
 .a-center {
 	width:25px;}
 .a-center-icon {
-	width:22px;
+	width:20px;
 	height:18px;
 	background-position:-184px -5px;
 	left:5%;
-	top:22%
-	}
+	top:21%;}
 .a-right {
 	width:25px;}
 .a-right-icon {
-	width:22px;
+	width:20px;
 	height:18px;
-	background-position:-211px -5px;
+	background-position:-208px -5px;
 	left:5%;
-	top:22%
+	top:21%;
 	}
 .i-link {
 	width:25px;}
 .i-link-icon {
-	width:21px;
-	height:20px;
-	background-position:-239px -1px;
+	width:19px;
+	height:18px;
+	background-position:-236px -5px;
 	left:5%;
-	top:20%
+	top:20%;
 	}
 .i-img {
 	width:16px;}
 .i-img-icon {
-	width:20px;
-	height:20px;
-	background-position:-267px -1px;
+	width:18px;
+	height:18px;
+	background-position:-265px -5px;
 	left:5%;
-	top:20%
+	top:20%;
 	}
 .font-color {
-	width:27px;}
+	width:27px;
+	color: #f60;
+	font-weight:bold;}
 .fc-icon {
 	width:13px;
-	height:12px;
-	background-position:-77px -5px;
+	height:11px;
+	background-position:-64px -5px;
 	top:30%;
 	left:5%;}
 .font-bg-color {
 	width:27px;
 	height:28px;
 	background-color:#f60;
-	border:1px solid #333;}
+	border:1px solid #333;
+	color: #FFFFFF;
+	font-weight:bold;}
 .font-bg-icon {
-	background:url(../images/img-we-addition.gif) no-repeat;
-	position:absolute;}
+	width:13px;
+	height:11px;
+	background-position:-82px -5px;
+	top:30%;
+	left:5%;
+}
 .bg-title {
 	width:14px;
 	height:12px;
 	background-position:-10px -1px;
 	top:30%;
 	left:1%;}
-.bg-arrow {
-	width:10px;
-	height:8px;
-	background-position:0px 0px;
-	top:30%;
-	right:5%;
-	}
-.b-icon {
-	width:12px;
-	height:16px;
-	background-position:-14px -6px;
-	left:10%;
-	top:25%;}
 
-.u-icon {
-	width:18px;
-	height:16px;
-	background-position:-57px -6px;
-	left:5%;
-	top:25%;}
 .we-menu-title {
 	position:absolute; 
 	left:10%;}
 .arrow {
-	width:12px;
-	height:8px;
-	background-position:-2px -4px;
+	width:8px;
+	height:5px;
+	background-position:-5px -5px;
 	top:30%;
 	right:5%;
 }
@@ -217,3 +224,14 @@ div.we-edit-area {
 	border-right: 5px solid transparent;
 	
 	border-bottom: 5px solid black;}
+	
+.menu-item-selected-border {
+	background-color: #ccc;
+	border-radius: 5px 5px;
+    -moz-border-radius: 5px 5px;
+}
+.menu-item-selected-shadow {
+    -moz-box-shadow: inset 0 0 10px #000000;
+    -webkit-box-shadow: inset 0 0 10px #000000;
+    box-shadow: inset 0 0 10px #000000;
+}
