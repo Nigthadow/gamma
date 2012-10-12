@@ -67,7 +67,7 @@
 			// detach all panels
 			$('[id$=-panel]', $('#we-menu')).detach();
 			// unselect the following menu items
-			var unSelectedItems = ['menu-cat', 'menu-font-family', 'menu-font-size', 'menu-font-color', 'menu-font-bg-color'];
+			var unSelectedItems = ['menu-cat', 'menu-font-family', 'menu-font-size', 'menu-font-color', 'menu-font-bg-color', 'we-menu-fs-dropdown'];
 			for(var i in unSelectedItems) {
 				$('[id$=' + unSelectedItems[i] + ']').removeClass("menu-item-selected-shadow")
 			}
@@ -86,6 +86,9 @@
 		},
 		unselected: function(ele) {
 			return ele.removeClass("menu-item-selected-shadow");
+		},
+		editable: function(ele) {
+			return ele.attr('contentEditable', 'true');
 		},
 		panelHoverIn: function(ele) {
 			var tar = ele instanceof jQuery ? ele : $(this);
@@ -113,9 +116,9 @@
 				return ele;
 			}
 		},
-		bindClick: function(ele, mutexHandlers, uiHandlers, formatHanlders) {
-			var mg = $.fn[pn].etk.mutex.getMutexGroupsByEventAndItem('click', ele);
-			return ele.on('click', {'mutex': {'group': mg, 'handlers': mutexHandlers}, 'uiHandlers': uiHandlers, 'formatHandlers': formatHanlders}, $.fn[pn].etk.getEventEngine(ele));
+		bindEvent: function(eventName, ele, mutexHandlers, uiHandlers, formatHanlders) {
+			var mg = $.fn[pn].etk.mutex.getMutexGroupsByEventAndItem(eventName, ele);
+			return ele.on(eventName, {'mutex': {'group': mg, 'handlers': mutexHandlers}, 'uiHandlers': uiHandlers, 'formatHandlers': formatHanlders}, $.fn[pn].etk.getEventEngine(ele));
 		},
 	};
 	var WEBEDITOR = {
@@ -244,7 +247,7 @@
 				}
 			},		
 			getArrow: function() {
-				return this.getMenuIcon().addClass("arrow");
+				return this.getMenuIcon().addClass("arrow").attr('id', 'we-menu-arrow-down');
 			},
 			
 			getSep: function(clz) {
@@ -266,7 +269,7 @@
 			},
 			
 			getDiv: function(content) {
-				var div = $("<div></div>");	
+				var div = $("<div>");	
 				if(content) {
 					return div.text(content + "");	
 				}
@@ -364,7 +367,6 @@
 				
 				return [leftOffset, topOffset];
 			},
-			
 			getMenuCatPanel: function() {
 				var panelId = 'we-menu-cat-panel', 
 					options = [['we-menu-cat-pnormal', 'Normal', 'cat-pnormal'],
@@ -372,7 +374,7 @@
 							   ['we-menu-cat-phead2', 'Head 2', 'cat-phead2'],
 							   ['we-menu-cat-phead1', 'Head 1', 'cat-phead1']];
 							   
-				var panel = this.getDiv().attr('id', panelId);
+				var panel = this.getDiv().attr('id', panelId).addClass('we-menu-panel');
 				for(var i=0,j=options.length; i<j; i++){
 				  var option = options[i];
 				  if(option.length != 3) throw Error('Wrong parameters number for cat panel: ' + option);
@@ -389,10 +391,10 @@
 			getMenuFontFamilyPanel: function() {
 				var panelId = 'we-menu-ff-panel', 
 					options = [['we-menu-ff-arial', 'Arial', 'ff-arial'],
-							  // ['we-menu-ff-mp', 'Myriad Pro', 'ff-mp'],
-							   ['we-menu-ff-songti', '宋体', 'ff-st'],];
+							   ['we-menu-ff-mp', 'Myriad', 'ff-mp'],
+							   ['we-menu-ff-songti', '宋体', 'ff-st']];
 							   
-				var panel = this.getDiv().attr('id', panelId);
+				var panel = this.getDiv().attr('id', panelId).addClass('we-menu-panel');
 				for(var i=0,j=options.length; i<j; i++){
 				  var option = options[i];
 				  if(option.length != 3) throw Error('Wrong parameters number for font family panel: ' + option);
@@ -406,7 +408,15 @@
 				
 				return panel;
 			},
-			getMenuFontSizePanel: function() {},
+			getMenuFontSizePanel: function() {
+				var panelId = 'we-menu-fs-panel', lineId = 'we-menu-fs-line-panel', knobId = 'we-menu-fs-knob-panel';
+				var panel = this.getDiv().attr('id', panelId).addClass('we-menu-panel');
+				var line = this.getDiv().attr('id', lineId); 
+				var knob = this.getDiv().attr('id', knobId);
+				this.getDiv().addClass('we-menu-fs-knob-arrow').appendTo(knob);
+				this.getDiv().addClass('we-menu-fs-knob-rect').appendTo(knob);
+				return [panel, line, knob];
+			},
 			getColorPanel: function() {},
 			
 			/**
@@ -443,7 +453,7 @@
 		initMenuEvents: {
 			init: function(initMenuLayout) {
 				this.etk = $.fn[pn].etk;
-				this.bindClick = $.fn[pn].etk.bindClick;
+				this.bindEvent = $.fn[pn].etk.bindEvent;
 				this.ml = initMenuLayout;
 				$('body').click(function(){
 					$.fn[pn].etk.cleanAll();
@@ -453,7 +463,7 @@
 			
 			bindEvents4Cat: function(ele) {
 				var ml = this.ml;
-				var bindClick = this.bindClick,
+				var bindEvent = this.bindEvent,
 					hoverIn = this.etk.panelHoverIn,
 					hoverOut = this.etk.panelHoverOut,
 					pDetach = this.etk.panelDetach,
@@ -496,14 +506,14 @@
 					  .each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindClick(ele, [], [pDetach, pSelected, stop], [getFormatter(ele)]);
+						bindEvent('click', ele, [], [pDetach, pSelected, stop], [getFormatter(ele)]);
 					});
 				};
-				return bindClick(ele, [], [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [], [clean, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontFamily: function(ele) {
 				var ml = this.ml;
-				var bindClick = this.bindClick,
+				var bindEvent = this.bindEvent,
 					hoverIn = this.etk.panelHoverIn,
 					hoverOut = this.etk.panelHoverOut,
 					pDetach = this.etk.panelDetach,
@@ -514,6 +524,11 @@
 					// TODO implement format logic
 					return ele;
 				};
+				var changeMenuFontFamily = function(ele) {
+					var menuId = ele.attr('menu'), font = ele.css('font-family');
+					$('#' + menuId, $('#we-menu')).css('font-family', font);
+					return ele;
+				};
 				var expandPanel = function(ele) {
 					var co = ml.getCoordinate(ele);
 					ml.getMenuFontFamilyPanel()
@@ -522,12 +537,48 @@
 					  .children('div').each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindClick(ele, [], [pDetach, pSelected, stop], [formatter]);
+						bindEvent('click',ele, [], [changeMenuFontFamily, pDetach, pSelected, stop], [formatter]);
 					});
 				};
-				return bindClick(ele, [], [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [], [clean, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontSize: function(ele) {
+				var ml = this.ml;
+				var bindEvent = this.bindEvent,
+					hoverIn = this.etk.panelHoverIn,
+					hoverOut = this.etk.panelHoverOut,
+					pDetach = this.etk.panelDetach,
+					pSelected = this.etk.panelSelected,
+					clean = this.etk.cleanAll,
+					stop = this.etk.stop;
+				var smallRadius = function(ele) {
+					return ele.css("border-radius", '2px 2px').css('-moz-border-radius', '2px 2px');
+				};
+				var sizeChange = function(ele) {
+					alert(ele.text());
+					return ele;
+				};
+				
+				var expandPanel = function(ele) {
+					var p = ele.parent();
+					var co = ml.getCoordinate(p);
+					var panels = ml.getMenuFontSizePanel();
+					var panel = panels[0], line = panels[1], knob = panels[2]; 
+					var panelLeft = co[0] + parseInt(p.css('width')) - parseInt(ele.css('width'));
+					panel.css('left', panelLeft).css('top', co[1] + 3).appendTo(p.parent());
+					var panelWidth = parseInt(panel.css('width'));
+					line.css('left', panelLeft + panelWidth / 3).css('top', co[1] + 6).appendTo(p.parent());
+					
+					var size = parseInt(p.children('.we-menu-title').text());
+					if(size < 0) size = 0;
+					if(size > 100) size = 100;
+					knob.css('left', panelLeft + panelWidth / 3).css('top', co[1] + 6 + size).attr('title', size).appendTo(p.parent());
+					
+				};
+				
+				var dropdown = ele.children('#we-menu-fs-dropdown'), size = ele.children('[class$=title]');
+				bindEvent('click', dropdown, [], [clean, this.etk.selected, smallRadius, expandPanel, stop], []);
+				// bindEvent('click', size, [], [this.etk.editable], []);
 				return ele;
 			},
 			bindEvents4FontColor: function(ele) {return ele;},
@@ -538,14 +589,14 @@
 				};
 				
 				var formatHandlers = [formatHandler];
-				return this.bindClick(ele, [], [this.etk.toggleSelected], formatHandlers);
+				return this.bindEvent('click',ele, [], [this.etk.toggleSelected], formatHandlers);
 			},
 			bindEvents4I: function(ele) {
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
 				var formatHandlers = [formatHandler];
-				this.bindClick(ele, [], [this.etk.toggleSelected], formatHandlers);
+				this.bindEvent('click',ele, [], [this.etk.toggleSelected], formatHandlers);
 				return ele;
 			},
 			bindEvents4B: function(ele) {
@@ -554,7 +605,7 @@
 				};
 				
 				var formatHandlers = [formatHandler];
-				return this.bindClick(ele, [], [this.etk.toggleSelected], formatHandlers);
+				return this.bindEvent('click',ele, [], [this.etk.toggleSelected], formatHandlers);
 			},
 			bindEvents4Ol: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
@@ -562,7 +613,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				return this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				return this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
 			},
 			bindEvents4Ul: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
@@ -570,7 +621,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
 				return ele;
 			},
 			bindEvents4AlignLeft: function(ele) {
@@ -579,7 +630,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
 				return ele;
 			},
 			bindEvents4AlignCenter: function(ele) {
@@ -588,7 +639,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
 				return ele;
 			},
 			bindEvents4AlignRight: function(ele) {
@@ -597,7 +648,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
 				return ele;
 			},
 			bindEvents4InsertLink: function(ele) {return ele;},
@@ -626,6 +677,14 @@
 			initMenuFontSize: function() {
 				var id = 'menu-font-size';
 				var item = this.ml.getMenuItemById(id);
+				
+				// add dropdown box for font size
+				var dropDownBox = this.ml.getDiv().addClass('we-menu-title-dropdown').attr('id', 'we-menu-fs-dropdown');
+				var arrow = item.children('#we-menu-arrow-down').appendTo(dropDownBox);
+				item.children('#we-menu-arrow-down').remove();
+				item.append(dropDownBox);
+				item.children('[class$=title]').css('width', '24px');
+				
 				return this.me.bindEvents4FontSize(item);
 			},
 			initMenuBold: function() {
