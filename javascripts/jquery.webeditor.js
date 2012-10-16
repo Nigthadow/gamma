@@ -414,11 +414,35 @@
 				var panel = this.getDiv().attr('id', panelId).addClass('we-menu-panel');
 				var line = this.getDiv().attr('id', lineId); 
 				var knob = this.getDiv().attr('id', knobId);
-				// this.getDiv().addClass('we-menu-fs-knob-arrow').appendTo(knob);
-				// this.getDiv().addClass('we-menu-fs-knob-rect').appendTo(knob);
 				return [panel, line, knob];
 			},
-			getColorPanel: function() {},
+			getColorPanel: function() {
+				var panelId = 'we-menu-color-panel';
+				var panel = this.getDiv().attr('id', panelId),
+				title = $('<h4>').text('Color Panel').addClass('title').appendTo(panel),
+				ul = $('<ul>').appendTo(panel);
+				var colors = {
+					gray: ['fff', '999', '666', '333', '000'],
+					red: ['ffbfbf', 'ff4040', 'd90000', 'bf0000', '800000'], /* take a look at: http://webdesign.about.com/od/colorpalettes/l/bl_palette_red.htm*/
+					blue: ['9cf', '69c', '369', '069', '036'], /* take a look at: http://www.creativecolorschemes.com/resources/free-color-schemes/blue-tone-color-scheme.shtml*/
+					green: ['a0dfbf', '40be80', '00a855', '006600', '030'], /* take a look at: http://webdesign.about.com/od/colorpalettes/l/bl_palette_green.htm*/
+				};
+				
+				for(var i in colors) {
+					var color = colors[i];
+					var li = $('<li>').appendTo(ul);
+					var table = $('<table>').appendTo(li);
+					var tb = $('<tbody>').appendTo(table);
+					var tr = $('<tr>').appendTo(tb);
+					var emptyTd = $('<td>').css('width', '10px').appendTo(tr);
+					for(var j in color) {
+						var rgb = '#' + color[j];
+						$('<td>').append(this.getDiv().attr('title', rgb).css('backgroundColor', rgb)).appendTo(tr);
+					}
+					$('<li>').css('height', '3px').css('border', '0').appendTo(ul);
+				}
+				return panel;
+			},
 			
 			/**
 			 * 
@@ -605,67 +629,74 @@
 					    else if(top - maxTopPosition > 0) top = maxTopPosition;
 					    knob.offset({top: top}).text(getSize(ele, event));
 					};
-					bindEvent('mousemove', line, [mouseMove], []);
+					bindEvent('mousemove', line, [mouseMove]);
 					bindEvent('click', knob, [stop]);
 					bindEvent('click', panel, [stop]);
-					/*
-					
-										var knobMouseDown = function(ele) {
-											var $drag = ele, e = event;
-											var z_idx = $drag.css('z-index'),
-											drg_h = $drag.outerHeight(),
-											pos_y = $drag.offset().top + drg_h - e.pageY,
-											topStart = line.offset().top + parseInt(line.css('border-top')) + 1, // at least 1 for font size
-											topEnd = line.offset().top + line.outerHeight() - parseInt(line.css('border-bottom')),
-											minTopPosition = topStart - 0.5 * drg_h,
-											maxTopPosition = topEnd - 0.5 * drg_h;
-											   $drag.addClass('knob-draggable').css('z-index', 1000);
-																							panel.on("mousemove", function(e) {
-												var top = e.pageY + pos_y - drg_h;
-												if (top - minTopPosition < 0) top = minTopPosition;
-												else if(top - maxTopPosition > 0) top = maxTopPosition;
-												var size = parseInt(top - topStart + 4);
-												$('.we-menu-title', p).text(parseInt(size));
-												$('.knob-draggable').offset({
-												   top:top,
-											   }).on("mouseup", function() {
-												   $(this).removeClass('knob-draggable').css('z-index', z_idx);
-											   });
-											}).on('mouseup', function() {
-												return $('.knob-draggable').removeClass('knob-draggable').css('z-index', z_idx);
-											});
-																							 line.on("mousemove", function(e) {
-												var top = e.pageY + pos_y - drg_h;
-												var size = parseInt(top - topStart + 4);
-												$('.we-menu-title', p).text(parseInt(size));
-												return $('.knob-draggable').offset({
-													top:top
-												}).on("mouseup", function() {
-													$(this).removeClass('knob-draggable').css('z-index', z_idx);
-												});
-												}).on('mouseup', function() {
-												return $('.knob-draggable').removeClass('knob-draggable').css('z-index', z_idx);
-											});;
-											return ele;
-										};
-										var knobMouseUp = function(ele) {
-											$('.knob-draggable').removeClass('knob-draggable');
-										};*/
-					
-					
-					//bindEvent('click', knob, [stop], []);
-					//bindEvent('mousedown', knob, [knobMouseDown], []);
-					//bindEvent('mouseup', line, [knobMouseUp], []);
-					//bindEvent('mouseup', panel, [knobMouseUp], []);
 				};
 				
 				var dropdown = ele.children('#we-menu-fs-dropdown'), size = ele.children('[class$=title]');
-				bindEvent('click', dropdown, [clean, this.etk.selected, smallRadius, expandPanel, stop], []);
+				bindEvent('click', dropdown, [clean, this.etk.selected, smallRadius, expandPanel, stop]);
 				// bindEvent('click', size, [], [this.etk.editable], []);
 				return ele;
 			},
-			bindEvents4FontColor: function(ele) {return ele;},
-			bindEvents4FontBgColor: function(ele) {return ele;},
+			bindEvents4FontColor: function(ele) {
+				var ml = this.ml;
+				var bindEvent = this.bindEvent,
+					hoverIn = this.etk.panelHoverIn,
+					hoverOut = this.etk.panelHoverOut,
+					pDetach = this.etk.panelDetach,
+					pSelected = this.etk.panelSelected,
+					clean = this.etk.cleanAll,
+					stop = this.etk.stop;
+				var expandPanel = function(ele, event) {
+					var co = ml.getCoordinate(ele);
+					ml.getColorPanel()
+					  .css('left', co[0]).css('top', co[1] + 3)
+					  .appendTo(ele.parent())
+					  .find('div').each(function(event) {
+					  	var ele = $(this);
+					  	var uiHandler = function(ele, event) {
+					  		$('[class$=title]', $('#menu-font-color')).css('color', ele.css('background-color'));
+					  		return ele;
+					  	};
+					  	var formatter = function(ele, event) {
+					  		return ele;
+					  	}
+					  	bindEvent('click', ele, [uiHandler], [formatter]);
+					  });
+				};
+				bindEvent('click', ele, [clean, this.etk.selected, expandPanel, stop]);
+				return ele;
+			},
+			bindEvents4FontBgColor: function(ele) {
+				var ml = this.ml;
+				var bindEvent = this.bindEvent,
+					hoverIn = this.etk.panelHoverIn,
+					hoverOut = this.etk.panelHoverOut,
+					pDetach = this.etk.panelDetach,
+					pSelected = this.etk.panelSelected,
+					clean = this.etk.cleanAll,
+					stop = this.etk.stop;
+				var expandPanel = function(ele, event) {
+					var co = ml.getCoordinate(ele);
+					ml.getColorPanel()
+					  .css('left', co[0]).css('top', co[1] + 3)
+					  .appendTo(ele.parent())
+					  .find('div').each(function(event) {
+					  	var ele = $(this);
+					  	var uiHandler = function(ele, event) {
+					  		$('#menu-font-bg-color').css('background-color', ele.css('background-color'));
+					  		return ele;
+					  	};
+					  	var formatter = function(ele, event) {
+					  		return ele;
+					  	}
+					  	bindEvent('click', ele, [uiHandler], [formatter]);
+					  });
+				};
+				bindEvent('click', ele, [clean, this.etk.selected, expandPanel, stop]);
+				return ele;
+			},
 			bindEvents4U: function(ele) {
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑

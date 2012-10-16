@@ -151,8 +151,7 @@ div.we-menu-item {
 }
 #we-menu-fs-knob-panel {
 	position:absolute;
-	cursor:pointer;
-	
+	cursor:default;	
 	width: 15px; 
 	height: 15px;
 	background-color: #b62e40;
@@ -164,6 +163,80 @@ div.we-menu-item {
 	-moz-border-radius-bottomleft: 7px 7px;
 	-moz-border-radius-topright: 1px;
 	-moz-border-radius-bottomright: 1px;
+}
+#we-menu-color-panel {
+	position:absolute;
+	height:200px;
+	background-color: #2D251D;
+	border: 1px solid #CCC;
+	-webkit-border-radius: 20px;
+	-moz-border-radius: 20px;
+	border-radius: 20px;
+	padding: 15px;
+	width: 200px;
+	color: #FFFFFF;
+}
+#we-menu-color-panel * {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+}
+#we-menu-color-panel h4 {
+	color: orange;
+	line-height: 25px;
+	font-weight: bold;
+	font-size: 13px;
+	font-family: arial;
+	border-radius: 6px 6px 6px 6px;
+	-webkit-border-radius: 6px 6px 6px 6px;
+	-moz-border-radius: 6px 6px 6px 6px;
+	width: 100%;
+	background-color: #52463B;
+	text-align: center;
+	vertical-align: middle;
+	margin-bottom:3px;
+}
+#we-menu-color-panel ol,ul {
+	list-style:none;
+	height:200px;
+	overflow: auto;
+	padding:20px;
+}
+#we-menu-color-panel li {
+	list-style:none;
+	border: 0px solid white;
+	border-top: 1px solid #CCC;
+	border-bottom: 1px solid #CCC;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	padding: 2px;
+	color: black;
+}
+#we-menu-color-panel li table{
+	width:100%;
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+#we-menu-color-panel li table tbody{
+	display: table-row-group;
+	vertical-align: middle;
+	border-color: inherit;
+}
+#we-menu-color-panel li table div {
+	width:30px;
+	height:30px;
+	cursor:pointer;
+	border: 1px solid white;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	-moz-box-shadow: inset 0 0 2px #ccc;
+    -webkit-box-shadow: inset 0 0 2px #ccc;
+    box-shadow: inset 0 0 2px #ccc;
 }
 .knob-draggable {
 	cursor: pointer;
@@ -248,7 +321,7 @@ div.we-menu-item {
 	}
 .font-color {
 	width:27px;
-	color: #f60;
+	color: #000000;
 	font-weight:bold;}
 .fc-icon {
 	width:13px;
@@ -259,7 +332,7 @@ div.we-menu-item {
 .font-bg-color {
 	width:27px;
 	height:28px;
-	background-color:#f60;
+	background-color:#000;
 	border:1px solid #333;
 	color: #FFFFFF;
 	font-weight:bold;}
