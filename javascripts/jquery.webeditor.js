@@ -132,7 +132,7 @@
 		
 		mainSep: '<div class="we-main-sep"/>',
 		menu: '<div id="we-menu"/>',
-		editArea: '<div class="we-edit-area" onClick="this.contentEditable=\'true\';"></div>',
+		editArea: '<div class="we-edit-area"></div>',
 		
 		init: function (element, options) {
 			this.$ctnr = $(element);
@@ -148,8 +148,8 @@
 			var $ctnr = this.$ctnr;
 			$ctnr.addClass("we-container")
 				 .append(this.initMenu())
-				 .append(this.$mainSep)
-				 .append(this.$editArea);
+				 .append(this.$mainSep);
+			$('<div>').addClass('we-ec').append(this.$editArea.attr('contentEditable', 'true').append($('<div><br></div>'))).appendTo($ctnr);
 		},
 		
 		initMenuLayout: {	
@@ -419,8 +419,8 @@
 			getColorPanel: function() {
 				var panelId = 'we-menu-color-panel';
 				var panel = this.getDiv().attr('id', panelId),
-				title = $('<h4>').text('Color Panel').addClass('title').appendTo(panel),
-				ul = $('<ul>').appendTo(panel);
+				title = $('<h4>').text('Color Panel').addClass('wmcp-title').appendTo(panel),
+				ul = $('<ul>').addClass('wmcp-ul').appendTo(panel);
 				var colors = {
 					gray: ['fff', '999', '666', '333', '000'],
 					red: ['ffbfbf', 'ff4040', 'd90000', 'bf0000', '800000'], /* take a look at: http://webdesign.about.com/od/colorpalettes/l/bl_palette_red.htm*/
@@ -430,16 +430,15 @@
 				
 				for(var i in colors) {
 					var color = colors[i];
-					var li = $('<li>').appendTo(ul);
-					var table = $('<table>').appendTo(li);
-					var tb = $('<tbody>').appendTo(table);
-					var tr = $('<tr>').appendTo(tb);
+					var li = $('<li>').addClass('wmcp-li').appendTo(ul);
+					var table = $('<table>').addClass('wmcp-table').appendTo(li);
+					var tr = $('<tr>').appendTo(table);
 					var emptyTd = $('<td>').css('width', '10px').appendTo(tr);
 					for(var j in color) {
 						var rgb = '#' + color[j];
-						$('<td>').append(this.getDiv().attr('title', rgb).css('backgroundColor', rgb)).appendTo(tr);
+						$('<td>').append(this.getDiv().addClass('wmcp-color-spot').attr('title', rgb).css('backgroundColor', rgb)).appendTo(tr);
 					}
-					$('<li>').css('height', '3px').css('border', '0').appendTo(ul);
+					$('<li>').addClass('wmcp-li').css('height', '3px').css('border', '0').appendTo(ul);
 				}
 				return panel;
 			},
@@ -660,6 +659,7 @@
 					  		return ele;
 					  	};
 					  	var formatter = function(ele, event) {
+					  		// TODO 实现字体颜色更改
 					  		return ele;
 					  	}
 					  	bindEvent('click', ele, [uiHandler], [formatter]);
@@ -689,6 +689,7 @@
 					  		return ele;
 					  	};
 					  	var formatter = function(ele, event) {
+					  		// TODO 实现字体背景色更改
 					  		return ele;
 					  	}
 					  	bindEvent('click', ele, [uiHandler], [formatter]);

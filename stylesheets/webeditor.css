@@ -4,7 +4,7 @@
 div.we-container {
 	position: relative;
 	width: 700px;
-	height: 500px;
+	/*height: 500px;*/
 	border: 1px solid #999;
 	border-radius: 15px 15px 5px 5px;
     -moz-border-radius: 15px 15px 5px 5px;
@@ -176,6 +176,7 @@ div.we-menu-item {
 	width: 200px;
 	color: #FFFFFF;
 }
+
 #we-menu-color-panel * {
 	margin: 0;
 	padding: 0;
@@ -183,12 +184,12 @@ div.we-menu-item {
 	font-size: 100%;
 	font: inherit;
 }
-#we-menu-color-panel h4 {
+.wmcp-title {
 	color: orange;
 	line-height: 25px;
 	font-weight: bold;
-	font-size: 13px;
-	font-family: arial;
+	font-size: 13px!important;
+	font-family: arial!important;
 	border-radius: 6px 6px 6px 6px;
 	-webkit-border-radius: 6px 6px 6px 6px;
 	-moz-border-radius: 6px 6px 6px 6px;
@@ -196,37 +197,28 @@ div.we-menu-item {
 	background-color: #52463B;
 	text-align: center;
 	vertical-align: middle;
-	margin-bottom:3px;
+	margin-bottom:4px!important;
 }
-#we-menu-color-panel ol,ul {
+.wmcp-ul {
 	list-style:none;
 	height:200px;
 	overflow: auto;
-	padding:20px;
 }
-#we-menu-color-panel li {
-	list-style:none;
-	border: 0px solid white;
+.wmcp-li {
 	border-top: 1px solid #CCC;
 	border-bottom: 1px solid #CCC;
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px;
 	border-radius: 6px;
-	padding: 2px;
+	padding: 2px!important;
 	color: black;
 }
-#we-menu-color-panel li table{
+.wmcp-table{
 	width:100%;
 	border-collapse: collapse;
 	border-spacing: 0;
 }
-
-#we-menu-color-panel li table tbody{
-	display: table-row-group;
-	vertical-align: middle;
-	border-color: inherit;
-}
-#we-menu-color-panel li table div {
+.wmcp-color-spot {
 	width:30px;
 	height:30px;
 	cursor:pointer;
@@ -375,13 +367,7 @@ div.we-main-sep {
 	box-shadow: 0 0 1px #333;
 	-moz-box-shadow: 0 0 1px #333;
 	background-color: #999;}
-div.we-edit-area {
-	margin-bottom:2px;
-	bottom: 5px;
-	padding:10px;
-	height:80%;
-	width:96%;
-	border:0px solid #03C;}
+
 .menu-clue {
 	position:absolute;
 	background-color:#333;
@@ -415,4 +401,16 @@ div.we-edit-area {
     box-shadow: inset 0 0 10px #ccc;
     border-radius: 5px 5px;
     -moz-border-radius: 5px 5px;
+}
+
+div.we-edit-area {
+	font-size:13px;
+	min-height:100px;
+	line-height:22px;
+	outline:none;
+	}
+.we-ec {
+	background: white;
+	width: auto!important;
+	padding: 8px 10px!important;
 }
