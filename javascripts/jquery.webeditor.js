@@ -33,6 +33,7 @@
 				if(data.mutex) { // mutex logic processing
 					var groups = data.mutex.group;
 					var handlers = data.mutex.handlers
+					handlers = handlers ? handlers : [];
 					for(var i in groups) {
 						var group = groups[i];
 						for (var k in group) {
@@ -40,7 +41,7 @@
 							var item = $('#' + group[k]);
 							for(var j in handlers) {
 								var handler = handlers[j];
-								handler(item);
+								handler(item, event);
 							};
 						};
 					};
@@ -50,7 +51,7 @@
 					var handlers = data.uiHandlers
 					for(var i in handlers) {
 						var handler = handlers[i];
-						handler(me);
+						handler(me, event);
 					}
 				}; // end of UI processing
 				
@@ -58,7 +59,7 @@
 					var handlers = data.formatHandlers
 					for(var i in handlers) {
 						var handler = handlers[i];
-						handler(me);
+						handler(me, event);
 					}
 				}; // end of format processing			
 			});
@@ -72,7 +73,7 @@
 				$('[id$=' + unSelectedItems[i] + ']').removeClass("menu-item-selected-shadow")
 			}
 		},
-		stop: function() {
+		stop: function(ele, event) {
 			event.stopPropagation();
 		},
 		toggleSelected: function(ele) {
@@ -116,7 +117,7 @@
 				return ele;
 			}
 		},
-		bindEvent: function(eventName, ele, mutexHandlers, uiHandlers, formatHanlders) {
+		bindEvent: function(eventName, ele, uiHandlers, formatHanlders,  mutexHandlers) {
 			var mg = $.fn[pn].etk.mutex.getMutexGroupsByEventAndItem(eventName, ele);
 			return ele.on(eventName, {'mutex': {'group': mg, 'handlers': mutexHandlers}, 'uiHandlers': uiHandlers, 'formatHandlers': formatHanlders}, $.fn[pn].etk.getEventEngine(ele));
 		},
@@ -413,8 +414,8 @@
 				var panel = this.getDiv().attr('id', panelId).addClass('we-menu-panel');
 				var line = this.getDiv().attr('id', lineId); 
 				var knob = this.getDiv().attr('id', knobId);
-				this.getDiv().addClass('we-menu-fs-knob-arrow').appendTo(knob);
-				this.getDiv().addClass('we-menu-fs-knob-rect').appendTo(knob);
+				// this.getDiv().addClass('we-menu-fs-knob-arrow').appendTo(knob);
+				// this.getDiv().addClass('we-menu-fs-knob-rect').appendTo(knob);
 				return [panel, line, knob];
 			},
 			getColorPanel: function() {},
@@ -506,10 +507,10 @@
 					  .each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindEvent('click', ele, [], [pDetach, pSelected, stop], [getFormatter(ele)]);
+						bindEvent('click', ele, [pDetach, pSelected, stop], [getFormatter(ele)]);
 					});
 				};
-				return bindEvent('click',ele, [], [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [clean, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontFamily: function(ele) {
 				var ml = this.ml;
@@ -537,10 +538,10 @@
 					  .children('div').each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindEvent('click',ele, [], [changeMenuFontFamily, pDetach, pSelected, stop], [formatter]);
+						bindEvent('click',ele, [changeMenuFontFamily, pDetach, pSelected, stop], [formatter]);
 					});
 				};
-				return bindEvent('click',ele, [], [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [clean, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontSize: function(ele) {
 				var ml = this.ml;
@@ -567,17 +568,96 @@
 					var panelLeft = co[0] + parseInt(p.css('width')) - parseInt(ele.css('width'));
 					panel.css('left', panelLeft).css('top', co[1] + 3).appendTo(p.parent());
 					var panelWidth = parseInt(panel.css('width'));
-					line.css('left', panelLeft + panelWidth / 3).css('top', co[1] + 6).appendTo(p.parent());
+					line.css('left', panelLeft + panelWidth / 5).css('top', co[1] + 6).appendTo(p.parent());
+					var getSize = function(ele, event) {
+						var y = event.pageY, top = ele.offset().top, bt = ele.css('border-top-width');
+						var size = parseInt(y) - parseInt(top) - parseInt(bt);
+						size = size < 1 ? 1 : size;
+						size = size > 100 ? 100 : size;
+						
+						return parseInt(size);
+					};
+					var clickLine = function(ele, event) {
+						$('.we-menu-title', p).text(getSize(ele, event));
+					};
+					
+					var fontSizeFormatter = function(ele) {
+						// TODO 实现字体大小的格式变化
+						return ele;
+					};
+					bindEvent('click', line, [clickLine], [fontSizeFormatter]);
 					
 					var size = parseInt(p.children('.we-menu-title').text());
-					if(size < 0) size = 0;
+					if(size < 1) size = 1;
 					if(size > 100) size = 100;
-					knob.css('left', panelLeft + panelWidth / 3).css('top', co[1] + 6 + size).attr('title', size).appendTo(p.parent());
+					var lineWidth = line.outerWidth();
+					knob.css('left', panelLeft + panelWidth / 5 + lineWidth).css('top', co[1] + 6 + size).text(size).appendTo(p.parent());
 					
+					var mouseMove = function(ele, event) {
+						var e = event,
+						height = knob.outerHeight(),
+		                topStart = line.offset().top + parseInt(line.css('border-top')) + 1, // at least 1 for font size
+		                topEnd = line.offset().top + line.outerHeight() - parseInt(line.css('border-bottom')),
+		                minTopPosition = topStart - 0.5 * height,
+		                maxTopPosition = topEnd - 0.5 * height;
+		                var top = e.pageY - height / 2;
+		           		if (top - minTopPosition < 0) top = minTopPosition;
+					    else if(top - maxTopPosition > 0) top = maxTopPosition;
+					    knob.offset({top: top}).text(getSize(ele, event));
+					};
+					bindEvent('mousemove', line, [mouseMove], []);/*
+					
+										var knobMouseDown = function(ele) {
+											var $drag = ele, e = event;
+											var z_idx = $drag.css('z-index'),
+											drg_h = $drag.outerHeight(),
+											pos_y = $drag.offset().top + drg_h - e.pageY,
+											topStart = line.offset().top + parseInt(line.css('border-top')) + 1, // at least 1 for font size
+											topEnd = line.offset().top + line.outerHeight() - parseInt(line.css('border-bottom')),
+											minTopPosition = topStart - 0.5 * drg_h,
+											maxTopPosition = topEnd - 0.5 * drg_h;
+											   $drag.addClass('knob-draggable').css('z-index', 1000);
+																							panel.on("mousemove", function(e) {
+												var top = e.pageY + pos_y - drg_h;
+												if (top - minTopPosition < 0) top = minTopPosition;
+												else if(top - maxTopPosition > 0) top = maxTopPosition;
+												var size = parseInt(top - topStart + 4);
+												$('.we-menu-title', p).text(parseInt(size));
+												$('.knob-draggable').offset({
+												   top:top,
+											   }).on("mouseup", function() {
+												   $(this).removeClass('knob-draggable').css('z-index', z_idx);
+											   });
+											}).on('mouseup', function() {
+												return $('.knob-draggable').removeClass('knob-draggable').css('z-index', z_idx);
+											});
+																							 line.on("mousemove", function(e) {
+												var top = e.pageY + pos_y - drg_h;
+												var size = parseInt(top - topStart + 4);
+												$('.we-menu-title', p).text(parseInt(size));
+												return $('.knob-draggable').offset({
+													top:top
+												}).on("mouseup", function() {
+													$(this).removeClass('knob-draggable').css('z-index', z_idx);
+												});
+												}).on('mouseup', function() {
+												return $('.knob-draggable').removeClass('knob-draggable').css('z-index', z_idx);
+											});;
+											return ele;
+										};
+										var knobMouseUp = function(ele) {
+											$('.knob-draggable').removeClass('knob-draggable');
+										};*/
+					
+					
+					//bindEvent('click', knob, [stop], []);
+					//bindEvent('mousedown', knob, [knobMouseDown], []);
+					//bindEvent('mouseup', line, [knobMouseUp], []);
+					//bindEvent('mouseup', panel, [knobMouseUp], []);
 				};
 				
 				var dropdown = ele.children('#we-menu-fs-dropdown'), size = ele.children('[class$=title]');
-				bindEvent('click', dropdown, [], [clean, this.etk.selected, smallRadius, expandPanel, stop], []);
+				bindEvent('click', dropdown, [clean, this.etk.selected, smallRadius, expandPanel, stop], []);
 				// bindEvent('click', size, [], [this.etk.editable], []);
 				return ele;
 			},
@@ -589,14 +669,14 @@
 				};
 				
 				var formatHandlers = [formatHandler];
-				return this.bindEvent('click',ele, [], [this.etk.toggleSelected], formatHandlers);
+				return this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
 			},
 			bindEvents4I: function(ele) {
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
 				var formatHandlers = [formatHandler];
-				this.bindEvent('click',ele, [], [this.etk.toggleSelected], formatHandlers);
+				this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
 				return ele;
 			},
 			bindEvents4B: function(ele) {
@@ -605,7 +685,7 @@
 				};
 				
 				var formatHandlers = [formatHandler];
-				return this.bindEvent('click',ele, [], [this.etk.toggleSelected], formatHandlers);
+				return this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
 			},
 			bindEvents4Ol: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
@@ -613,7 +693,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				return this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
+				return this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 			},
 			bindEvents4Ul: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
@@ -621,7 +701,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
 			bindEvents4AlignLeft: function(ele) {
@@ -630,7 +710,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
 			bindEvents4AlignCenter: function(ele) {
@@ -639,7 +719,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
 			bindEvents4AlignRight: function(ele) {
@@ -648,7 +728,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindEvent('click',ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
 			bindEvents4InsertLink: function(ele) {return ele;},
