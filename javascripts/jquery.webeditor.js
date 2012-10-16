@@ -605,7 +605,10 @@
 					    else if(top - maxTopPosition > 0) top = maxTopPosition;
 					    knob.offset({top: top}).text(getSize(ele, event));
 					};
-					bindEvent('mousemove', line, [mouseMove], []);/*
+					bindEvent('mousemove', line, [mouseMove], []);
+					bindEvent('click', knob, [stop]);
+					bindEvent('click', panel, [stop]);
+					/*
 					
 										var knobMouseDown = function(ele) {
 											var $drag = ele, e = event;
