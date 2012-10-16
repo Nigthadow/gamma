@@ -33,6 +33,7 @@
 				if(data.mutex) { // mutex logic processing
 					var groups = data.mutex.group;
 					var handlers = data.mutex.handlers
+					handlers = handlers ? handlers : [];
 					for(var i in groups) {
 						var group = groups[i];
 						for (var k in group) {
@@ -40,7 +41,7 @@
 							var item = $('#' + group[k]);
 							for(var j in handlers) {
 								var handler = handlers[j];
-								handler(item);
+								handler(item, event);
 							};
 						};
 					};
@@ -50,7 +51,7 @@
 					var handlers = data.uiHandlers
 					for(var i in handlers) {
 						var handler = handlers[i];
-						handler(me);
+						handler(me, event);
 					}
 				}; // end of UI processing
 				
@@ -58,7 +59,7 @@
 					var handlers = data.formatHandlers
 					for(var i in handlers) {
 						var handler = handlers[i];
-						handler(me);
+						handler(me, event);
 					}
 				}; // end of format processing			
 			});
@@ -67,12 +68,12 @@
 			// detach all panels
 			$('[id$=-panel]', $('#we-menu')).detach();
 			// unselect the following menu items
-			var unSelectedItems = ['menu-cat', 'menu-font-family', 'menu-font-size', 'menu-font-color', 'menu-font-bg-color'];
+			var unSelectedItems = ['menu-cat', 'menu-font-family', 'menu-font-size', 'menu-font-color', 'menu-font-bg-color', 'we-menu-fs-dropdown'];
 			for(var i in unSelectedItems) {
 				$('[id$=' + unSelectedItems[i] + ']').removeClass("menu-item-selected-shadow")
 			}
 		},
-		stop: function() {
+		stop: function(ele, event) {
 			event.stopPropagation();
 		},
 		toggleSelected: function(ele) {
@@ -86,6 +87,9 @@
 		},
 		unselected: function(ele) {
 			return ele.removeClass("menu-item-selected-shadow");
+		},
+		editable: function(ele) {
+			return ele.attr('contentEditable', 'true');
 		},
 		panelHoverIn: function(ele) {
 			var tar = ele instanceof jQuery ? ele : $(this);
@@ -113,9 +117,9 @@
 				return ele;
 			}
 		},
-		bindClick: function(ele, mutexHandlers, uiHandlers, formatHanlders) {
-			var mg = $.fn[pn].etk.mutex.getMutexGroupsByEventAndItem('click', ele);
-			return ele.on('click', {'mutex': {'group': mg, 'handlers': mutexHandlers}, 'uiHandlers': uiHandlers, 'formatHandlers': formatHanlders}, $.fn[pn].etk.getEventEngine(ele));
+		bindEvent: function(eventName, ele, uiHandlers, formatHanlders,  mutexHandlers) {
+			var mg = $.fn[pn].etk.mutex.getMutexGroupsByEventAndItem(eventName, ele);
+			return ele.on(eventName, {'mutex': {'group': mg, 'handlers': mutexHandlers}, 'uiHandlers': uiHandlers, 'formatHandlers': formatHanlders}, $.fn[pn].etk.getEventEngine(ele));
 		},
 	};
 	var WEBEDITOR = {
@@ -244,7 +248,7 @@
 				}
 			},		
 			getArrow: function() {
-				return this.getMenuIcon().addClass("arrow");
+				return this.getMenuIcon().addClass("arrow").attr('id', 'we-menu-arrow-down');
 			},
 			
 			getSep: function(clz) {
@@ -266,7 +270,7 @@
 			},
 			
 			getDiv: function(content) {
-				var div = $("<div></div>");	
+				var div = $("<div>");	
 				if(content) {
 					return div.text(content + "");	
 				}
@@ -364,7 +368,6 @@
 				
 				return [leftOffset, topOffset];
 			},
-			
 			getMenuCatPanel: function() {
 				var panelId = 'we-menu-cat-panel', 
 					options = [['we-menu-cat-pnormal', 'Normal', 'cat-pnormal'],
@@ -372,7 +375,7 @@
 							   ['we-menu-cat-phead2', 'Head 2', 'cat-phead2'],
 							   ['we-menu-cat-phead1', 'Head 1', 'cat-phead1']];
 							   
-				var panel = this.getDiv().attr('id', panelId);
+				var panel = this.getDiv().attr('id', panelId).addClass('we-menu-panel');
 				for(var i=0,j=options.length; i<j; i++){
 				  var option = options[i];
 				  if(option.length != 3) throw Error('Wrong parameters number for cat panel: ' + option);
@@ -389,10 +392,10 @@
 			getMenuFontFamilyPanel: function() {
 				var panelId = 'we-menu-ff-panel', 
 					options = [['we-menu-ff-arial', 'Arial', 'ff-arial'],
-							  // ['we-menu-ff-mp', 'Myriad Pro', 'ff-mp'],
-							   ['we-menu-ff-songti', '宋体', 'ff-st'],];
+							   ['we-menu-ff-mp', 'Myriad', 'ff-mp'],
+							   ['we-menu-ff-songti', '宋体', 'ff-st']];
 							   
-				var panel = this.getDiv().attr('id', panelId);
+				var panel = this.getDiv().attr('id', panelId).addClass('we-menu-panel');
 				for(var i=0,j=options.length; i<j; i++){
 				  var option = options[i];
 				  if(option.length != 3) throw Error('Wrong parameters number for font family panel: ' + option);
@@ -406,8 +409,40 @@
 				
 				return panel;
 			},
-			getMenuFontSizePanel: function() {},
-			getColorPanel: function() {},
+			getMenuFontSizePanel: function() {
+				var panelId = 'we-menu-fs-panel', lineId = 'we-menu-fs-line-panel', knobId = 'we-menu-fs-knob-panel';
+				var panel = this.getDiv().attr('id', panelId).addClass('we-menu-panel');
+				var line = this.getDiv().attr('id', lineId); 
+				var knob = this.getDiv().attr('id', knobId);
+				return [panel, line, knob];
+			},
+			getColorPanel: function() {
+				var panelId = 'we-menu-color-panel';
+				var panel = this.getDiv().attr('id', panelId),
+				title = $('<h4>').text('Color Panel').addClass('title').appendTo(panel),
+				ul = $('<ul>').appendTo(panel);
+				var colors = {
+					gray: ['fff', '999', '666', '333', '000'],
+					red: ['ffbfbf', 'ff4040', 'd90000', 'bf0000', '800000'], /* take a look at: http://webdesign.about.com/od/colorpalettes/l/bl_palette_red.htm*/
+					blue: ['9cf', '69c', '369', '069', '036'], /* take a look at: http://www.creativecolorschemes.com/resources/free-color-schemes/blue-tone-color-scheme.shtml*/
+					green: ['a0dfbf', '40be80', '00a855', '006600', '030'], /* take a look at: http://webdesign.about.com/od/colorpalettes/l/bl_palette_green.htm*/
+				};
+				
+				for(var i in colors) {
+					var color = colors[i];
+					var li = $('<li>').appendTo(ul);
+					var table = $('<table>').appendTo(li);
+					var tb = $('<tbody>').appendTo(table);
+					var tr = $('<tr>').appendTo(tb);
+					var emptyTd = $('<td>').css('width', '10px').appendTo(tr);
+					for(var j in color) {
+						var rgb = '#' + color[j];
+						$('<td>').append(this.getDiv().attr('title', rgb).css('backgroundColor', rgb)).appendTo(tr);
+					}
+					$('<li>').css('height', '3px').css('border', '0').appendTo(ul);
+				}
+				return panel;
+			},
 			
 			/**
 			 * 
@@ -443,7 +478,7 @@
 		initMenuEvents: {
 			init: function(initMenuLayout) {
 				this.etk = $.fn[pn].etk;
-				this.bindClick = $.fn[pn].etk.bindClick;
+				this.bindEvent = $.fn[pn].etk.bindEvent;
 				this.ml = initMenuLayout;
 				$('body').click(function(){
 					$.fn[pn].etk.cleanAll();
@@ -453,7 +488,7 @@
 			
 			bindEvents4Cat: function(ele) {
 				var ml = this.ml;
-				var bindClick = this.bindClick,
+				var bindEvent = this.bindEvent,
 					hoverIn = this.etk.panelHoverIn,
 					hoverOut = this.etk.panelHoverOut,
 					pDetach = this.etk.panelDetach,
@@ -496,14 +531,14 @@
 					  .each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindClick(ele, [], [pDetach, pSelected, stop], [getFormatter(ele)]);
+						bindEvent('click', ele, [pDetach, pSelected, stop], [getFormatter(ele)]);
 					});
 				};
-				return bindClick(ele, [], [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [clean, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontFamily: function(ele) {
 				var ml = this.ml;
-				var bindClick = this.bindClick,
+				var bindEvent = this.bindEvent,
 					hoverIn = this.etk.panelHoverIn,
 					hoverOut = this.etk.panelHoverOut,
 					pDetach = this.etk.panelDetach,
@@ -514,6 +549,11 @@
 					// TODO implement format logic
 					return ele;
 				};
+				var changeMenuFontFamily = function(ele) {
+					var menuId = ele.attr('menu'), font = ele.css('font-family');
+					$('#' + menuId, $('#we-menu')).css('font-family', font);
+					return ele;
+				};
 				var expandPanel = function(ele) {
 					var co = ml.getCoordinate(ele);
 					ml.getMenuFontFamilyPanel()
@@ -522,30 +562,155 @@
 					  .children('div').each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindClick(ele, [], [pDetach, pSelected, stop], [formatter]);
+						bindEvent('click',ele, [changeMenuFontFamily, pDetach, pSelected, stop], [formatter]);
 					});
 				};
-				return bindClick(ele, [], [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [clean, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontSize: function(ele) {
+				var ml = this.ml;
+				var bindEvent = this.bindEvent,
+					hoverIn = this.etk.panelHoverIn,
+					hoverOut = this.etk.panelHoverOut,
+					pDetach = this.etk.panelDetach,
+					pSelected = this.etk.panelSelected,
+					clean = this.etk.cleanAll,
+					stop = this.etk.stop;
+				var smallRadius = function(ele) {
+					return ele.css("border-radius", '2px 2px').css('-moz-border-radius', '2px 2px');
+				};
+				var sizeChange = function(ele) {
+					alert(ele.text());
+					return ele;
+				};
+				
+				var expandPanel = function(ele) {
+					var p = ele.parent();
+					var co = ml.getCoordinate(p);
+					var panels = ml.getMenuFontSizePanel();
+					var panel = panels[0], line = panels[1], knob = panels[2]; 
+					var panelLeft = co[0] + parseInt(p.css('width')) - parseInt(ele.css('width'));
+					panel.css('left', panelLeft).css('top', co[1] + 3).appendTo(p.parent());
+					var panelWidth = parseInt(panel.css('width'));
+					line.css('left', panelLeft + panelWidth / 5).css('top', co[1] + 6).appendTo(p.parent());
+					var getSize = function(ele, event) {
+						var y = event.pageY, top = ele.offset().top, bt = ele.css('border-top-width');
+						var size = parseInt(y) - parseInt(top) - parseInt(bt);
+						size = size < 1 ? 1 : size;
+						size = size > 100 ? 100 : size;
+						
+						return parseInt(size);
+					};
+					var clickLine = function(ele, event) {
+						$('.we-menu-title', p).text(getSize(ele, event));
+					};
+					
+					var fontSizeFormatter = function(ele) {
+						// TODO 实现字体大小的格式变化
+						return ele;
+					};
+					bindEvent('click', line, [clickLine], [fontSizeFormatter]);
+					
+					var size = parseInt(p.children('.we-menu-title').text());
+					if(size < 1) size = 1;
+					if(size > 100) size = 100;
+					var lineWidth = line.outerWidth();
+					knob.css('left', panelLeft + panelWidth / 5 + lineWidth).css('top', co[1] + 6 + size).text(size).appendTo(p.parent());
+					
+					var mouseMove = function(ele, event) {
+						var e = event,
+						height = knob.outerHeight(),
+		                topStart = line.offset().top + parseInt(line.css('border-top')) + 1, // at least 1 for font size
+		                topEnd = line.offset().top + line.outerHeight() - parseInt(line.css('border-bottom')),
+		                minTopPosition = topStart - 0.5 * height,
+		                maxTopPosition = topEnd - 0.5 * height;
+		                var top = e.pageY - height / 2;
+		           		if (top - minTopPosition < 0) top = minTopPosition;
+					    else if(top - maxTopPosition > 0) top = maxTopPosition;
+					    knob.offset({top: top}).text(getSize(ele, event));
+					};
+					bindEvent('mousemove', line, [mouseMove]);
+					bindEvent('click', knob, [stop]);
+					bindEvent('click', panel, [stop]);
+				};
+				
+				var dropdown = ele.children('#we-menu-fs-dropdown'), size = ele.children('[class$=title]');
+				bindEvent('click', dropdown, [clean, this.etk.selected, smallRadius, expandPanel, stop]);
+				// bindEvent('click', size, [], [this.etk.editable], []);
 				return ele;
 			},
-			bindEvents4FontColor: function(ele) {return ele;},
-			bindEvents4FontBgColor: function(ele) {return ele;},
+			bindEvents4FontColor: function(ele) {
+				var ml = this.ml;
+				var bindEvent = this.bindEvent,
+					hoverIn = this.etk.panelHoverIn,
+					hoverOut = this.etk.panelHoverOut,
+					pDetach = this.etk.panelDetach,
+					pSelected = this.etk.panelSelected,
+					clean = this.etk.cleanAll,
+					stop = this.etk.stop;
+				var expandPanel = function(ele, event) {
+					var co = ml.getCoordinate(ele);
+					ml.getColorPanel()
+					  .css('left', co[0]).css('top', co[1] + 3)
+					  .appendTo(ele.parent())
+					  .find('div').each(function(event) {
+					  	var ele = $(this);
+					  	var uiHandler = function(ele, event) {
+					  		$('[class$=title]', $('#menu-font-color')).css('color', ele.css('background-color'));
+					  		return ele;
+					  	};
+					  	var formatter = function(ele, event) {
+					  		return ele;
+					  	}
+					  	bindEvent('click', ele, [uiHandler], [formatter]);
+					  });
+				};
+				bindEvent('click', ele, [clean, this.etk.selected, expandPanel, stop]);
+				return ele;
+			},
+			bindEvents4FontBgColor: function(ele) {
+				var ml = this.ml;
+				var bindEvent = this.bindEvent,
+					hoverIn = this.etk.panelHoverIn,
+					hoverOut = this.etk.panelHoverOut,
+					pDetach = this.etk.panelDetach,
+					pSelected = this.etk.panelSelected,
+					clean = this.etk.cleanAll,
+					stop = this.etk.stop;
+				var expandPanel = function(ele, event) {
+					var co = ml.getCoordinate(ele);
+					ml.getColorPanel()
+					  .css('left', co[0]).css('top', co[1] + 3)
+					  .appendTo(ele.parent())
+					  .find('div').each(function(event) {
+					  	var ele = $(this);
+					  	var uiHandler = function(ele, event) {
+					  		$('#menu-font-bg-color').css('background-color', ele.css('background-color'));
+					  		return ele;
+					  	};
+					  	var formatter = function(ele, event) {
+					  		return ele;
+					  	}
+					  	bindEvent('click', ele, [uiHandler], [formatter]);
+					  });
+				};
+				bindEvent('click', ele, [clean, this.etk.selected, expandPanel, stop]);
+				return ele;
+			},
 			bindEvents4U: function(ele) {
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
 				
 				var formatHandlers = [formatHandler];
-				return this.bindClick(ele, [], [this.etk.toggleSelected], formatHandlers);
+				return this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
 			},
 			bindEvents4I: function(ele) {
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
 				var formatHandlers = [formatHandler];
-				this.bindClick(ele, [], [this.etk.toggleSelected], formatHandlers);
+				this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
 				return ele;
 			},
 			bindEvents4B: function(ele) {
@@ -554,7 +719,7 @@
 				};
 				
 				var formatHandlers = [formatHandler];
-				return this.bindClick(ele, [], [this.etk.toggleSelected], formatHandlers);
+				return this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
 			},
 			bindEvents4Ol: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
@@ -562,7 +727,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				return this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				return this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 			},
 			bindEvents4Ul: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
@@ -570,7 +735,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
 			bindEvents4AlignLeft: function(ele) {
@@ -579,7 +744,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
 			bindEvents4AlignCenter: function(ele) {
@@ -588,7 +753,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
 			bindEvents4AlignRight: function(ele) {
@@ -597,7 +762,7 @@
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
-				this.bindClick(ele, mutexHandlers, uiHandlers, [formatHandler]);
+				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
 			bindEvents4InsertLink: function(ele) {return ele;},
@@ -626,6 +791,14 @@
 			initMenuFontSize: function() {
 				var id = 'menu-font-size';
 				var item = this.ml.getMenuItemById(id);
+				
+				// add dropdown box for font size
+				var dropDownBox = this.ml.getDiv().addClass('we-menu-title-dropdown').attr('id', 'we-menu-fs-dropdown');
+				var arrow = item.children('#we-menu-arrow-down').appendTo(dropDownBox);
+				item.children('#we-menu-arrow-down').remove();
+				item.append(dropDownBox);
+				item.children('[class$=title]').css('width', '24px');
+				
 				return this.me.bindEvents4FontSize(item);
 			},
 			initMenuBold: function() {
