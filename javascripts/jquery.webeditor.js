@@ -132,7 +132,7 @@
 		
 		mainSep: '<div class="we-main-sep"/>',
 		menu: '<div id="we-menu"/>',
-		editArea: '<div class="we-edit-area"></div>',
+		editArea: '<div class="we-edit-area" id="we-edit-area"></div>',
 		
 		init: function (element, options) {
 			this.$ctnr = $(element);
@@ -148,8 +148,29 @@
 			var $ctnr = this.$ctnr;
 			$ctnr.addClass("we-container")
 				 .append(this.initMenu())
-				 .append(this.$mainSep);
-			$('<div>').addClass('we-ec').append(this.$editArea.attr('contentEditable', 'true').append($('<div><br></div>'))).appendTo($ctnr);
+				 .append(this.$mainSep)
+				 .append(this.initEditArea());
+		},
+		
+		initEditArea: function() {
+			
+			var removeLastDiv = function(event) {
+				var key = event.which;
+				switch(key) {
+					case 46: // Delete key
+					case 8: // Backspace key
+						if($(this).children('div').length == 0) {
+							$(this).empty();
+							var div = $('<div><br></div>').appendTo($(this));
+							$('#menu-ol').trigger('click');
+						}
+						break;						
+				}
+			};
+			this.$editArea.attr('contentEditable', 'true')
+				.append($('<div><br></div>'))
+				.keyup(removeLastDiv);
+			return $('<div>').addClass('we-ec').append(this.$editArea);
 		},
 		
 		initMenuLayout: {	
