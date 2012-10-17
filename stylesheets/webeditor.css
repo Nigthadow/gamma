@@ -166,7 +166,7 @@ div.we-menu-item {
 }
 #we-menu-color-panel {
 	position:absolute;
-	height:200px;
+	height:180px;
 	background-color: #2D251D;
 	border: 1px solid #CCC;
 	-webkit-border-radius: 20px;
@@ -199,12 +199,12 @@ div.we-menu-item {
 	vertical-align: middle;
 	margin-bottom:4px!important;
 }
-.wmcp-ul {
+#we-menu-color-panel ul {
 	list-style:none;
 	height:200px;
 	overflow: auto;
 }
-.wmcp-li {
+#we-menu-color-panel li {
 	border-top: 1px solid #CCC;
 	border-bottom: 1px solid #CCC;
 	-webkit-border-radius: 6px;
@@ -402,7 +402,6 @@ div.we-main-sep {
     border-radius: 5px 5px;
     -moz-border-radius: 5px 5px;
 }
-
 div.we-edit-area {
 	font-size:13px;
 	min-height:300px;
