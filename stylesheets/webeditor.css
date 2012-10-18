@@ -316,12 +316,14 @@ div.we-menu-item {
 	color: #000000;
 	font-weight:bold;}
 .fc-icon {
+	cursor:auto;
 	width:13px;
 	height:11px;
 	background-position:-64px -5px;
 	top:30%;
 	left:5%;}
 .font-bg-color {
+	cursor:auto;
 	width:27px;
 	height:28px;
 	background-color:#000;

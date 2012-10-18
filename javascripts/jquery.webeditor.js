@@ -88,7 +88,7 @@
 						itemClz: ['icon-spot'],
 						iconClz: ['a-left-icon'],
 						clue: "左对齐",
-						defaults: true,
+						defaults: false,
 					},
 					"menu-acenter": {
 						itemClz: ['icon-spot'],
@@ -194,15 +194,11 @@
 			if(ele.attr('selected')) return ele.removeAttr('selected');
 			else return ele.attr('selected', '');
 		},
-		toggleAttr_v: function(ele) {
-			var isTrue = (ele.attr('_v') === 'true');
-			return ele.attr('_v', !isTrue);
-		},
 		selected: function(ele) {
 			return ele.removeClass("menu-item-selected-shadow").addClass('menu-item-selected-shadow');
 		},
 		unselected: function(ele) {
-			return ele.removeClass("menu-item-selected-shadow");
+			return ele.removeClass("menu-item-selected-shadow").removeAttr('selected');
 		},
 		editable: function(ele) {
 			return ele.attr('contentEditable', 'true');
@@ -232,6 +228,54 @@
 					.text(tar.text());
 				return ele;
 			}
+		},
+		saveSelection: function(ele, event) {
+			var save, selection = null;
+			if(window.getSelection) { 
+				// ge IE 9 and other browers
+				save = function() {
+					var selection = window.getSelection(), ranges = [];
+					if(selection.rangeCount) {
+						for(var i = 0; i < selection.rangeCount; i ++) {
+							ranges.push(selection.getRangeAt(i));
+						}
+					}
+					return ranges;
+				};
+			} else if(document.selection && document.selection.createRange) {
+				// le IE 8
+				save = function() {
+					var selection = document.selection;
+					return (selection.Type != 'None') ? selection.createRange() : null;
+				};
+			}
+			if(save) selection = save();
+			$.fn[pn].data.selection = selection;
+			return ele;
+		},
+		restoreSelection: function(ele, event) {
+			var restore;
+			if(window.getSelection) { 
+				// ge IE 9 and other browers
+				restore = function(savedSelection) {
+					if(!savedSelection) return;
+					var selection = window.getSelection();
+					selection.removeAllRanges();
+					for(var i = 0, len = savedSelection.length; i < len; i ++) {
+						var range = savedSelection[i];
+						selection.addRange(range);
+					}
+				};
+			} else if(document.selection && document.selection.createRange) {
+				// le IE 8
+				restore = function(savedSelection) {
+					if(savedSelection) {
+						savedSelection.select();
+					}
+				};
+			}
+			if(restore) restore($.fn[pn].data.selection);
+			return ele;
 		},
 		bindEvent: function(eventName, ele, uiHandlers, formatHanlders,  mutexHandlers) {
 			var mg = $.fn[pn].etk.mutex.getMutexGroupsByEventAndItem(eventName, ele);
@@ -269,19 +313,7 @@
 		},
 		
 		initEditArea: function() {
-			var collectSelectionInfo = function() {
-				var selected = (function getSelected() {
-					if(window.getSelection) { return window.getSelection(); }
-			        else if(document.getSelection) { return document.getSelection(); }
-                    else {
-	                    var selection = document.selection && document.selection.createRange();
-	                    return selection;
-			        }
-			        return undefined;
-			   })();
-
-			};
-			
+			var saveSelection = $.fn[pn].etk.saveSelection
 			var keyupHandler = function(event) {
 				// make sure every paragraph is wrapped by a <div>
 				var key = event.which;
@@ -297,7 +329,7 @@
 					case 39: // Right key
 					case 40: // Down key
 						{
-							collectSelectionInfo();
+							saveSelection();
 							break;
 						}					
 				}
@@ -309,9 +341,13 @@
 				.hover(function(event) {
 					return $(this);
 				}, function(event) {
-					collectSelectionInfo()
+					saveSelection()
 					return $(this);
 				});
+			if($.browser.mozilla) {
+				// TODO keyup cann't be fired in FF:()
+				window.onkeyup = keyupHandler;
+			}
 			return $('<div>').addClass('we-ec').append(this.$editArea);
 		},
 		
@@ -792,7 +828,7 @@
 				};				
 				
 				var formatHandlers = [formatHandler];
-				this.bindEvent('click',ele, [this.etk.toggleSelected, this.etk.toggleAttr_v], formatHandlers);
+				this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
 				
 				return ele;
 			},
@@ -802,32 +838,34 @@
 				};
 				
 				var formatHandlers = [formatHandler];
-				this.bindEvent('click', ele, [this.etk.toggleSelected, this.etk.toggleAttr_v], formatHandlers);
+				this.bindEvent('click', ele, [this.etk.toggleSelected], formatHandlers);
 				this.bindEvent('mousedown', ele, [], [])
 				return ele;
 			},
 			bindEvents4B: function(ele) {
+				var toggleSelected = this.etk.toggleSelected,
+					restoreSelection = this.etk.restoreSelection;
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
 				
 				var formatHandlers = [formatHandler];
-				this.bindEvent('click',ele, [this.etk.toggleSelected, this.etk.toggleAttr_v], formatHandlers);
+				this.bindEvent('click',ele, [toggleSelected, restoreSelection], formatHandlers);
 				// this.bindEvent('mouseup', ele, [], [])
 				return ele;
 			},
 			bindEvents4Ol: function(ele) {
 				// TODO mutex handler for _v need more work!!!
-				var mutexHandlers = [this.etk.unselected, this.etk.toggleAttr_v];
-				var uiHandlers = [this.etk.toggleSelected, this.etk.toggleAttr_v];
+				var mutexHandlers = [this.etk.unselected];
+				var uiHandlers = [this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
 				return this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 			},
 			bindEvents4Ul: function(ele) {
-				var mutexHandlers = [this.etk.unselected, this.etk.toggleAttr_v];
-				var uiHandlers = [this.etk.toggleSelected, this.etk.toggleAttr_v];
+				var mutexHandlers = [this.etk.unselected];
+				var uiHandlers = [this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -835,8 +873,8 @@
 				return ele;
 			},
 			bindEvents4AlignLeft: function(ele) {
-				var mutexHandlers = [this.etk.unselected, this.etk.toggleAttr_v];
-				var uiHandlers = [this.etk.toggleSelected, this.etk.toggleAttr_v];
+				var mutexHandlers = [this.etk.unselected];
+				var uiHandlers = [this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -844,8 +882,8 @@
 				return ele;
 			},
 			bindEvents4AlignCenter: function(ele) {
-				var mutexHandlers = [this.etk.unselected, this.etk.toggleAttr_v];
-				var uiHandlers = [this.etk.toggleSelected, this.etk.toggleAttr_v];
+				var mutexHandlers = [this.etk.unselected];
+				var uiHandlers = [this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -853,8 +891,8 @@
 				return ele;
 			},
 			bindEvents4AlignRight: function(ele) {
-				var mutexHandlers = [this.etk.unselected, this.etk.toggleAttr_v];
-				var uiHandlers = [this.etk.toggleSelected, this.etk.toggleAttr_v];
+				var mutexHandlers = [this.etk.unselected];
+				var uiHandlers = [this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
