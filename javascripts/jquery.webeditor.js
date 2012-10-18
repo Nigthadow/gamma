@@ -344,10 +344,6 @@
 					saveSelection()
 					return $(this);
 				});
-			if($.browser.mozilla) {
-				// TODO keyup cann't be fired in FF:()
-				window.onkeyup = keyupHandler;
-			}
 			return $('<div>').addClass('we-ec').append(this.$editArea);
 		},
 		
@@ -600,7 +596,8 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var formatNormal = function(ele) {
 					// TODO implement format logic for normal
 					return ele;
@@ -649,10 +646,10 @@
 					  .each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindEvent('click', ele, [pDetach, pSelected, setSelectedValue, stop], [getFormatter(ele)]);
+						bindEvent('click', ele, [restoreSelection, pDetach, pSelected, setSelectedValue, stop], [getFormatter(ele)]);
 					});
 				};
-				return bindEvent('click',ele, [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [clean, restoreSelection, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontFamily: function(ele) {
 				var ml = this.ml;
@@ -662,7 +659,8 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var formatter = function(ele) {
 					// TODO implement format logic
 					return ele;
@@ -681,10 +679,10 @@
 					  .children('div').each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindEvent('click',ele, [changeMenuFontFamily, pDetach, pSelected, stop], [formatter]);
+						bindEvent('click',ele, [restoreSelection, changeMenuFontFamily, pDetach, pSelected, stop], [formatter]);
 					});
 				};
-				return bindEvent('click',ele, [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [clean, restoreSelection, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontSize: function(ele) {
 				var ml = this.ml;
@@ -694,7 +692,8 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var smallRadius = function(ele) {
 					return ele.css("border-radius", '2px 2px').css('-moz-border-radius', '2px 2px');
 				};
@@ -730,7 +729,7 @@
 						// TODO 实现字体大小的格式变化
 						return ele;
 					};
-					bindEvent('click', line, [clickLine], [fontSizeFormatter]);
+					bindEvent('click', line, [restoreSelection, clickLine], [fontSizeFormatter]);
 					
 					var size = parseInt(p.children('.we-menu-title').text());
 					if(size < 1) size = 1;
@@ -751,12 +750,12 @@
 					    knob.offset({top: top}).text(getSize(ele, event));
 					};
 					bindEvent('mousemove', line, [mouseMove]);
-					bindEvent('click', knob, [stop]);
-					bindEvent('click', panel, [stop]);
+					bindEvent('click', knob, [restoreSelection, stop]);
+					bindEvent('click', panel, [restoreSelection, stop]);
 				};
 				
 				var dropdown = ele.children('#we-menu-fs-dropdown'), size = ele.children('[class$=title]');
-				bindEvent('click', dropdown, [clean, this.etk.selected, smallRadius, expandPanel, stop]);
+				bindEvent('click', dropdown, [clean, restoreSelection, this.etk.selected, smallRadius, expandPanel, stop]);
 				// bindEvent('click', size, [], [this.etk.editable], []);
 				return ele;
 			},
@@ -768,12 +767,13 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var expandPanel = function(ele, event) {
 					var co = ml.getCoordinate(ele);
-					ml.getColorPanel()
-					  .css('left', co[0]).css('top', co[1] + 3)
-					  .appendTo(ele.parent())
+					var panel = ml.getColorPanel();
+					panel.css('left', co[0]).css('top', co[1] + 3)
+					  .appendTo(ele.parent())					 
 					  .find('div').each(function(event) {
 					  	var ele = $(this);
 					  	var uiHandler = function(ele, event) {
@@ -785,10 +785,14 @@
 					  		// TODO 实现字体颜色更改
 					  		return ele;
 					  	}
-					  	bindEvent('click', ele, [uiHandler], [formatter]);
+					  	bindEvent('click', ele, [restoreSelection, uiHandler, clean], [formatter]);
 					  });
+					bindEvent('click', panel, [restoreSelection, stop]);
+					panel.children().not('div').each(function(event) {
+						bindEvent('click', ele, [restoreSelection, stop]);
+					});
 				};
-				bindEvent('click', ele, [clean, this.etk.selected, expandPanel, stop]);
+				bindEvent('click', ele, [clean, restoreSelection, this.etk.selected, expandPanel, stop]);
 				return ele;
 			},
 			bindEvents4FontBgColor: function(ele) {
@@ -799,11 +803,12 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var expandPanel = function(ele, event) {
 					var co = ml.getCoordinate(ele);
-					ml.getColorPanel()
-					  .css('left', co[0]).css('top', co[1] + 3)
+					var panel = ml.getColorPanel();
+					panel.css('left', co[0]).css('top', co[1] + 3)
 					  .appendTo(ele.parent())
 					  .find('div').each(function(event) {
 					  	var ele = $(this);
@@ -816,10 +821,14 @@
 					  		// TODO 实现字体背景色更改
 					  		return ele;
 					  	}
-					  	bindEvent('click', ele, [uiHandler], [formatter]);
+					  	bindEvent('click', ele, [restoreSelection, uiHandler, clean], [formatter]);
 					  });
+					bindEvent('click', panel, [restoreSelection, stop]);
+					panel.children().not('div').each(function(event) {
+						bindEvent('click', ele, [restoreSelection, stop]);
+					});
 				};
-				bindEvent('click', ele, [clean, this.etk.selected, expandPanel, stop]);
+				bindEvent('click', ele, [clean, restoreSelection, this.etk.selected, expandPanel, stop]);
 				return ele;
 			},
 			bindEvents4U: function(ele) {
@@ -828,7 +837,7 @@
 				};				
 				
 				var formatHandlers = [formatHandler];
-				this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
+				this.bindEvent('click',ele, [this.etk.restoreSelection, this.etk.toggleSelected], formatHandlers);
 				
 				return ele;
 			},
@@ -838,7 +847,7 @@
 				};
 				
 				var formatHandlers = [formatHandler];
-				this.bindEvent('click', ele, [this.etk.toggleSelected], formatHandlers);
+				this.bindEvent('click', ele, [this.etk.restoreSelection, this.etk.toggleSelected], formatHandlers);
 				this.bindEvent('mousedown', ele, [], [])
 				return ele;
 			},
@@ -850,14 +859,13 @@
 				};
 				
 				var formatHandlers = [formatHandler];
-				this.bindEvent('click',ele, [toggleSelected, restoreSelection], formatHandlers);
+				this.bindEvent('click',ele, [restoreSelection, toggleSelected], formatHandlers);
 				// this.bindEvent('mouseup', ele, [], [])
 				return ele;
 			},
 			bindEvents4Ol: function(ele) {
-				// TODO mutex handler for _v need more work!!!
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -865,7 +873,7 @@
 			},
 			bindEvents4Ul: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -874,7 +882,7 @@
 			},
 			bindEvents4AlignLeft: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -883,7 +891,7 @@
 			},
 			bindEvents4AlignCenter: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -892,7 +900,7 @@
 			},
 			bindEvents4AlignRight: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
