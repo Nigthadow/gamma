@@ -6,6 +6,9 @@
 	'use strict'
 	var pn = 'webeditor';
 	var data = {
+		formats: {
+			dirty: false,
+		},
 		config: {
 				title: {
 					'menu-cat': {
@@ -275,6 +278,85 @@
 				};
 			}
 			if(restore) restore($.fn[pn].data.selection);
+			return ele;
+		},
+		formatElement: function(ele) {
+			/*
+			var id2css = {'menu-cat': ['h1', 'h2', 'h3'],
+									  'menu-font-family': 'font-family',
+									  'menu-font-size': 'font-size',
+									  'menu-font-b': 'font-weight: bold',
+									  'menu-font-i': 'font-style: italic',
+									  'menu-font-u': 'text-decoration:underline',
+									  'menu-font-color': 'color',
+									  'menu-font-bg-color': 'background-color',
+									  'menu-ol': '',
+									  'menu-ul': '',
+									  'menu-aleft': 'text-align',
+									  'menu-acenter': 'text-align',
+									  'menu-aright': 'text-align'};*/
+			var span = $('<span>'), p = span;
+			var formats = $.fn[pn].data.formats, format = formats['menu-cat'];
+			if(format) {
+				p = $('<' + format + '>').appendTo(span);
+			}
+			format = formats['menu-font-family'];
+			if(format) {
+				span.css('font-family', format);
+			}
+			format = formats['menu-font-size'];
+			span.css('font-family', format);
+			format = formats['menu-font-b'];
+			if(format) {
+				p = $('<b>').appendTo(p);
+			}
+			format = formats['menu-font-i'];
+			if(format) {
+				p = $('<i>').appendTo(p);
+			}
+			format = formats['menu-font-u'];
+			if(format) {
+				p = $('<u>').appendTo(p);
+			}
+			format = formats['menu-font-color']
+			if(format) {
+				span.css('color', format);
+			}
+			format = formats['menu-font-bg-color']
+			if(format) {
+				span.css('background-color', format);
+			}
+			format = formats['menu-ol'];
+			if(format) {
+				p = $('<ol><li>').append(p);
+			}
+			format = formats['menu-ul'];
+			if(format) {
+				p = $('<ul><li>').append(p);
+			}
+			format = formats['menu-aleft'];
+			if(format) {
+				span.css('text-align', 'left');
+			}
+			format = formats['menu-acenter'];
+			if(format) {
+				span.css('text-align', 'center');
+			}
+			format = formats['menu-aright'];
+			if(format) {
+				span.css('text-align', 'right');
+			}
+			
+			return span;
+		},
+		flushFormatsSet: function(ele) {
+			var formats = $.fn[pn].data.formats, configs = $.extend($.fn[pn].config.title, $.fn[pn].config.icon); 
+			for(var id in configs) {
+				var e = $('#' + i);
+				var prev = formats[i], selected = e.attr('selected') ? true : false, _v = e.attr('_v'), format = selected ? true : _v;
+				if(prev != format) $.fn[pn].data.formats.dirty = true;
+				$.fn[pn].data.formats[i] = format;
+			}
 			return ele;
 		},
 		bindEvent: function(eventName, ele, uiHandlers, formatHanlders,  mutexHandlers) {
