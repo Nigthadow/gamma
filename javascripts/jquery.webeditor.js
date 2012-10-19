@@ -420,6 +420,14 @@
 			this.$editArea.attr('contentEditable', 'true')
 				.append($('<div><br></div>'))
 				.keyup(keyupHandler)
+				.on('click', function(event) {
+					var range, selection = window.getSelection();
+					if(selection.rangeCount) {
+						range = selection.getRangeAt(0);
+						range.insertNode()
+					}
+					// var c = range.commonAncestorContainer;
+				})
 				.hover(function(event) {
 					return $(this);
 				}, function(event) {
