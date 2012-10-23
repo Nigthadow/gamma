@@ -295,10 +295,11 @@
 									  'menu-aleft': 'text-align',
 									  'menu-acenter': 'text-align',
 									  'menu-aright': 'text-align'};*/
-			var span = $('<span>'), p = span;
+			var span = $('<span>');
+			var p = span;
 			var formats = $.fn[pn].data.formats, format = formats['menu-cat'];
 			if(format) {
-				p = $('<' + format + '>').appendTo(span);
+				p = $('<' + format + '>').append(span);
 			}
 			format = formats['menu-font-family'];
 			if(format) {
@@ -307,16 +308,16 @@
 			format = formats['menu-font-size'];
 			span.css('font-family', format);
 			format = formats['menu-font-b'];
-			if(format) {
-				p = $('<b>').appendTo(p);
+			if(format == 'true') {
+				span.css('font-weight', 'bold');
 			}
 			format = formats['menu-font-i'];
-			if(format) {
-				p = $('<i>').appendTo(p);
+			if(format == 'true') {
+				span.css('font-style', 'italic');
 			}
 			format = formats['menu-font-u'];
-			if(format) {
-				p = $('<u>').appendTo(p);
+			if(format == 'true') {
+				span.css('text-decoration', 'underline');
 			}
 			format = formats['menu-font-color']
 			if(format) {
@@ -327,33 +328,36 @@
 				span.css('background-color', format);
 			}
 			format = formats['menu-ol'];
-			if(format) {
-				p = $('<ol><li>').append(p);
+			if(format == 'true') {
+				var li = $('<li>').append(span)
+				p = $('<ol>').append(li);
 			}
 			format = formats['menu-ul'];
-			if(format) {
-				p = $('<ul><li>').append(p);
+			if(format == 'true') {
+				var li = $('<li>').append(span);
+				p = $('<ul>').append(li);
 			}
 			format = formats['menu-aleft'];
-			if(format) {
+			if(format == 'true') {
 				span.css('text-align', 'left');
 			}
 			format = formats['menu-acenter'];
-			if(format) {
+			if(format == 'true') {
 				span.css('text-align', 'center');
 			}
 			format = formats['menu-aright'];
-			if(format) {
+			if(format == 'true') {
 				span.css('text-align', 'right');
 			}
 			
-			return span;
+			$('<br>').appendTo(span);
+			return p;
 		},
 		flushFormatsSet: function(ele) {
-			var formats = $.fn[pn].data.formats, configs = $.extend($.fn[pn].config.title, $.fn[pn].config.icon); 
-			for(var id in configs) {
+			var formats = $.fn[pn].data.formats, configs = $.extend($.fn[pn].data.config.title, $.fn[pn].data.config.icon); 
+			for(var i in configs) {
 				var e = $('#' + i);
-				var prev = formats[i], selected = e.attr('selected') ? true : false, _v = e.attr('_v'), format = selected ? true : _v;
+				var prev = formats[i], selected = e.attr('selected') ? 'true' : 'false', _v = e.attr('_v'), format = selected ? selected : _v;
 				if(prev != format) $.fn[pn].data.formats.dirty = true;
 				$.fn[pn].data.formats[i] = format;
 			}
@@ -418,14 +422,21 @@
 				return $(this);
 			};
 			this.$editArea.attr('contentEditable', 'true')
-				.append($('<div><br></div>'))
+				//.append($('<div><span style="color:#abc"><u><br></u></span></div>'))
 				.keyup(keyupHandler)
 				.on('click', function(event) {
+					var children = $(this).children();
+					if(children.length > 0) return;
+					$.fn[pn].etk.flushFormatsSet();
+					var span = $.fn[pn].etk.formatElement();
+					$(this).append($('<div>').append(span));
+					/*
 					var range, selection = window.getSelection();
-					if(selection.rangeCount) {
-						range = selection.getRangeAt(0);
-						range.insertNode()
-					}
+										if(selection.rangeCount) {
+											range = selection.getRangeAt(0);
+											range.insertNode()
+										}*/
+					
 					// var c = range.commonAncestorContainer;
 				})
 				.hover(function(event) {
