@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=windows-1250">
+  <meta name="generator" content="PSPad editor, www.pspad.com">
+  <title>Caret position in textarea</title>
+  </head>
+  <body>
+  
+  <h1>Caret position in textarea</h1>
+  
+  <script type="text/javascript">
+    var is_gecko = /gecko/i.test(navigator.userAgent);
+    var is_ie    = /MSIE/.test(navigator.userAgent);
+    
+    function setSelectionRange(input, start, end) {
+      if (is_gecko) {
+        input.setSelectionRange(start, end);
+      } else {
+        // assumed IE
+        var range = input.createTextRange();
+        range.collapse(true);
+        range.moveStart("character", start);
+        range.moveEnd("character", end - start);
+        range.select();
+      }
+    };
+    
+    function getSelectionStart(input) {
+      if (is_gecko)
+        return input.selectionStart;
+      var range = document.selection.createRange();
+      var isCollapsed = range.compareEndPoints("StartToEnd", range) == 0;
+      if (!isCollapsed)
+        range.collapse(true);
+      var b = range.getBookmark();
+      return b.charCodeAt(2) - 2;
+    };
+    
+    function getSelectionEnd(input) {
+      if (is_gecko)
+        return input.selectionEnd;
+      var range = document.selection.createRange();
+      var isCollapsed = range.compareEndPoints("StartToEnd", range) == 0;
+      if (!isCollapsed)
+        range.collapse(false);
+      var b = range.getBookmark();
+      return b.charCodeAt(2) - 2;
+    };
+    
+    function inputKey(input, ev) {
+      setTimeout(function() {
+        document.getElementById("selStart").value = getSelectionStart(input);
+        document.getElementById("selEnd").value = getSelectionEnd(input);
+      }, 20);
+    }
+    function doSelect() {
+      var start = document.getElementById("selStart").value;
+      var end = document.getElementById("selEnd").value;
+      var input = document.getElementById("testfield");
+      input.focus();
+      setSelectionRange(input, start, end);
+    }
+  </script>
+  
+  <p style="text-align: center">
+    <input id="testfield" size="30" value="Move the caret around here ;-)" 
+           onmouseup="inputKey(this, event)" 
+           onkeyup="inputKey(this, event)" />
+    <input id="selStart" size="4" />
+    <input id="selEnd" size="4" />
+  
+    <button onclick="doSelect()">Select</button>
+  </p>
+  
+  <p>
+    Write some text in the first field and/or move the caret or
+    select text and it will update the next 2 fields with selection
+    start and selection end respectively.  Or, put some values in
+    the small fields and click “Select” to set the selection range.
+  </p>
+  
+
+  </body>
+</html>

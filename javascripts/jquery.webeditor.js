@@ -296,26 +296,22 @@
 									  'menu-acenter': 'text-align',
 									  'menu-aright': 'text-align'};*/
 			var span = $('<span>');
-			var p = span;
-			var formats = $.fn[pn].data.formats, format = formats['menu-cat'];
-			if(format) {
-				p = $('<' + format + '>').append(span);
-			}
+			var p = span, formats = $.fn[pn].data.formats, format = undefined;//
 			format = formats['menu-font-family'];
 			if(format) {
 				span.css('font-family', format);
 			}
 			format = formats['menu-font-size'];
 			span.css('font-family', format);
-			format = formats['menu-font-b'];
+			format = formats['menu-font-b'] + "";
 			if(format == 'true') {
 				span.css('font-weight', 'bold');
 			}
-			format = formats['menu-font-i'];
+			format = formats['menu-font-i'] + "";
 			if(format == 'true') {
 				span.css('font-style', 'italic');
 			}
-			format = formats['menu-font-u'];
+			format = formats['menu-font-u'] + "";
 			if(format == 'true') {
 				span.css('text-decoration', 'underline');
 			}
@@ -327,27 +323,31 @@
 			if(format) {
 				span.css('background-color', format);
 			}
-			format = formats['menu-ol'];
+			format = formats['menu-ol'] + "";
 			if(format == 'true') {
 				var li = $('<li>').append(span)
 				p = $('<ol>').append(li);
 			}
-			format = formats['menu-ul'];
+			format = formats['menu-ul'] + "";
 			if(format == 'true') {
 				var li = $('<li>').append(span);
 				p = $('<ul>').append(li);
 			}
-			format = formats['menu-aleft'];
+			format = formats['menu-aleft'] + "";
 			if(format == 'true') {
 				span.css('text-align', 'left');
 			}
-			format = formats['menu-acenter'];
+			format = formats['menu-acenter'] + "";
 			if(format == 'true') {
 				span.css('text-align', 'center');
 			}
-			format = formats['menu-aright'];
+			format = formats['menu-aright'] + "";
 			if(format == 'true') {
 				span.css('text-align', 'right');
+			}
+			format = formats['menu-cat'];
+			if(format) {
+				p = $('<' + format + '>').append(p);
 			}
 			
 			$('<br>').appendTo(span);
@@ -357,7 +357,7 @@
 			var formats = $.fn[pn].data.formats, configs = $.extend($.fn[pn].data.config.title, $.fn[pn].data.config.icon); 
 			for(var i in configs) {
 				var e = $('#' + i);
-				var prev = formats[i], selected = e.attr('selected') ? 'true' : 'false', _v = e.attr('_v'), format = selected ? selected : _v;
+				var prev = formats[i], selected = e.attr('selected') ? true : false, _v = e.attr('_v'), format = selected ? selected : _v;
 				if(prev != format) $.fn[pn].data.formats.dirty = true;
 				$.fn[pn].data.formats[i] = format;
 			}
