@@ -28,11 +28,11 @@
 					},
 					'menu-font-size': {
 						itemClz: ['we-menu-size', 'we-menu-item-border'],
-						titleName: ["15"],
+						titleName: ["25"],
 						titleCss: {'cursor': "text"},
 						needArrow: true,
 						clue: "字体大小",
-						defaults: '15',
+						defaults: '45',
 					},
 					'menu-font-color': {
 						itemClz: ['font-color', 'we-menu-item-border'],
@@ -238,6 +238,12 @@
 				// ge IE 9 and other browers
 				save = function() {
 					var selection = window.getSelection(), ranges = [];
+					$.fn[pn].data.selObj = {
+						anchorNode: selection.anchorNode,
+						anchorOffset: selection.anchorOffset,
+						focusNode: selection.focusNode, 
+						focusOffset: selection.focusOffset
+					};
 					if(selection.rangeCount) {
 						for(var i = 0; i < selection.rangeCount; i ++) {
 							ranges.push(selection.getRangeAt(i));
@@ -266,6 +272,29 @@
 					selection.removeAllRanges();
 					for(var i = 0, len = savedSelection.length; i < len; i ++) {
 						var range = savedSelection[i];
+						if(range && !range.toString()) {
+							/*
+							var textNode = document.createTextNode("text");
+														range.insertNode(textNode);
+														range.setStart(textNode, textNode.length);
+														range.setEnd(textNode, textNode.length);*/
+							
+							/*
+							range.setStart(range.startContainer, range.startOffset);
+														range.setEnd(range.endContainer, range.endOffset);*/
+							// var selObj = $.fn[pn].data.selObj;
+							// range.insertNode(selObj.focusNode);
+							// range.setStart(selObj.focusNode, selObj.focusOffset);
+							// range.setEnd(selObj.focusNode, selObj.focusOffset);	
+							
+							//range.setStart(range.startContainer, range.startOffset);
+							//range.setEnd(range.endContainer, range.endOffset);
+							/*
+							range.selectNode(range.endContainer);	
+														range.collapse(true);				
+														$(range.startContainer).trigger('blur').trigger('focus');*/
+								
+						}
 						selection.addRange(range);
 					}
 				};
@@ -280,21 +309,7 @@
 			if(restore) restore($.fn[pn].data.selection);
 			return ele;
 		},
-		formatElement: function(ele) {
-			/*
-			var id2css = {'menu-cat': ['h1', 'h2', 'h3'],
-									  'menu-font-family': 'font-family',
-									  'menu-font-size': 'font-size',
-									  'menu-font-b': 'font-weight: bold',
-									  'menu-font-i': 'font-style: italic',
-									  'menu-font-u': 'text-decoration:underline',
-									  'menu-font-color': 'color',
-									  'menu-font-bg-color': 'background-color',
-									  'menu-ol': '',
-									  'menu-ul': '',
-									  'menu-aleft': 'text-align',
-									  'menu-acenter': 'text-align',
-									  'menu-aright': 'text-align'};*/
+		getEmptyFormattedSpot: function(ele) {
 			var span = $('<span>');
 			var p = span, formats = $.fn[pn].data.formats, format = undefined;//
 			format = formats['menu-font-family'];
@@ -302,7 +317,7 @@
 				span.css('font-family', format);
 			}
 			format = formats['menu-font-size'];
-			span.css('font-family', format);
+			span.css('font-size', format + "px");
 			format = formats['menu-font-b'] + "";
 			if(format == 'true') {
 				span.css('font-weight', 'bold');
@@ -363,6 +378,28 @@
 			}
 			return ele;
 		},
+		flushAllDivCss: function() {
+			var flushDivCss = this.flushDivCss;
+			$('#we-edit-area').children('div').each(function(event) {
+				flushDivCss($(this));
+				return $(this);
+			});
+		},
+		flushDivCss: function(div) {
+			var height = parseInt(div.css('height')), maxHeight = -1;
+			div.find('span').each(function(event) {
+				var fontSize = parseInt($(this).css('font-size')), 
+				    cssHeight = parseInt($(this).css('height')), 
+				    height = fontSize > cssHeight ? fontSize : cssHeight;
+				maxHeight = maxHeight > height ? maxHeight : height;
+			});
+			height = maxHeight > 0 ? maxHeight + 6 : height;
+			return div.css('height', height + "px")
+			          .css('line-height', height + "px");
+		},
+		flushDivContainerCss: function(ele) {
+			
+		},
 		bindEvent: function(eventName, ele, uiHandlers, formatHanlders,  mutexHandlers) {
 			var mg = $.fn[pn].etk.mutex.getMutexGroupsByEventAndItem(eventName, ele);
 			return ele.on(eventName, {'mutex': {'group': mg, 'handlers': mutexHandlers}, 'uiHandlers': uiHandlers, 'formatHandlers': formatHanlders}, $.fn[pn].etk.getEventEngine(ele));
@@ -388,6 +425,7 @@
 
 			this.options = $.extend(this.defaults, options);
 			this.initLayout();
+			$.fn[pn].etk.flushAllDivCss();
 		},
 		
 		initLayout: function() {
@@ -399,15 +437,29 @@
 		},
 		
 		initEditArea: function() {
-			var saveSelection = $.fn[pn].etk.saveSelection
+			var saveSelection = $.fn[pn].etk.saveSelection,
+			    flushFormatsSet = $.fn[pn].etk.flushFormatsSet,
+			    getEmptyFormattedSpot = $.fn[pn].etk.getEmptyFormattedSpot,
+			    flushDivCss = $.fn[pn].etk.flushDivCss,
+			    getInitEditableDiv = function() {
+			    	flushFormatsSet();
+			    	var spot = getEmptyFormattedSpot().attr('init', 'true');
+			    	var div = $('<div>').append(spot);
+			    	return div;
+			    };
 			var keyupHandler = function(event) {
 				// make sure every paragraph is wrapped by a <div>
 				var key = event.which;
 				switch(key) {
 					case 46: // Delete key
 					case 8: // Backspace key
-						if($(this).children('div').length == 0) {
-							$(this).empty().append($('<div><br></div>')).trigger('blur').trigger('focus');
+						if($(this).children('div').length == 0 || $(this).find('span').length == 0) {
+							var div = getInitEditableDiv();
+							$(this).empty()
+							       .append(div)
+							       .trigger('blur')
+							       .trigger('focus');
+							flushDivCss(div);
 						}
 						break;	
 					case 37: // Left key
@@ -421,30 +473,18 @@
 				}
 				return $(this);
 			};
+			//flushFormatsSet();
+			var div = getInitEditableDiv();
 			this.$editArea.attr('contentEditable', 'true')
-				//.append($('<div><span style="color:#abc"><u><br></u></span></div>'))
+				.append(div)
 				.keyup(keyupHandler)
-				.on('click', function(event) {
-					var children = $(this).children();
-					if(children.length > 0) return;
-					$.fn[pn].etk.flushFormatsSet();
-					var span = $.fn[pn].etk.formatElement();
-					$(this).append($('<div>').append(span));
-					/*
-					var range, selection = window.getSelection();
-										if(selection.rangeCount) {
-											range = selection.getRangeAt(0);
-											range.insertNode()
-										}*/
-					
-					// var c = range.commonAncestorContainer;
-				})
 				.hover(function(event) {
 					return $(this);
 				}, function(event) {
 					saveSelection()
 					return $(this);
 				});
+		//	flushDivCss(div);
 			return $('<div>').addClass('we-ec').append(this.$editArea);
 		},
 		
@@ -1008,7 +1048,25 @@
 				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
-			bindEvents4InsertLink: function(ele) {return ele;},
+			bindEvents4InsertLink: function(ele) {
+				var setCaret = function(ele) {
+					var span = $('#we-edit-area').find('span')[0];
+					var sel = window.getSelection();
+					
+					
+					var range = sel.getRangeAt(0);
+           			// range.deleteContents();
+		            range.insertNode(span);
+		
+		            // Move caret to the end of the newly inserted text node
+		            range.setStart(span, 0);
+		            range.setEnd(span, 0);
+		            sel.removeAllRanges();
+		            sel.addRange(range);
+				};
+				this.bindEvent('click',ele, [setCaret]);
+				return ele;
+			},
 			bindEvents4InsertImg: function(ele) {return ele;},
 			bindEvents4More: function(ele) {return ele;}
 		},

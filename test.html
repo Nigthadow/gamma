@@ -14,7 +14,7 @@
     var is_ie    = /MSIE/.test(navigator.userAgent);
     
     function setSelectionRange(input, start, end) {
-      if (is_gecko) {
+      if (!is_gecko) {
         input.setSelectionRange(start, end);
       } else {
         // assumed IE
