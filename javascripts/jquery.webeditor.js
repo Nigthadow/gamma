@@ -272,29 +272,14 @@
 					selection.removeAllRanges();
 					for(var i = 0, len = savedSelection.length; i < len; i ++) {
 						var range = savedSelection[i];
-						if(range && !range.toString()) {
-							/*
-							var textNode = document.createTextNode("text");
-														range.insertNode(textNode);
-														range.setStart(textNode, textNode.length);
-														range.setEnd(textNode, textNode.length);*/
-							
-							/*
-							range.setStart(range.startContainer, range.startOffset);
-														range.setEnd(range.endContainer, range.endOffset);*/
-							// var selObj = $.fn[pn].data.selObj;
-							// range.insertNode(selObj.focusNode);
-							// range.setStart(selObj.focusNode, selObj.focusOffset);
-							// range.setEnd(selObj.focusNode, selObj.focusOffset);	
-							
-							//range.setStart(range.startContainer, range.startOffset);
-							//range.setEnd(range.endContainer, range.endOffset);
-							/*
-							range.selectNode(range.endContainer);	
-														range.collapse(true);				
-														$(range.startContainer).trigger('blur').trigger('focus');*/
+						if($.browser.opera || $.browser.mozilla) {
+							// reset cursor position when there's no selection in Opera
+							if(!range || !range.toString()) {
 								
+							}
+							$('#we-edit-area').trigger('blur').trigger('focus');
 						}
+						
 						selection.addRange(range);
 					}
 				};
