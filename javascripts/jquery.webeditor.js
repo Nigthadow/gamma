@@ -959,7 +959,7 @@
 			},
 			bindEvents4U: function(ele) {
 				var formatHandler = function(ele) {
-					// TODO 实现格式变换逻辑
+					document.execCommand('underline', false);
 				};				
 				
 				var formatHandlers = [formatHandler];
@@ -969,7 +969,7 @@
 			},
 			bindEvents4I: function(ele) {
 				var formatHandler = function(ele) {
-					// TODO 实现格式变换逻辑
+					document.execCommand('italic', false);
 				};
 				
 				var formatHandlers = [formatHandler];
@@ -982,6 +982,7 @@
 					restoreSelection = this.etk.restoreSelection;
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
+					document.execCommand('bold', false);
 				};
 				
 				var formatHandlers = [formatHandler];
