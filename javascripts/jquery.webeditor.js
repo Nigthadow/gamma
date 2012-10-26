@@ -28,11 +28,11 @@
 					},
 					'menu-font-size': {
 						itemClz: ['we-menu-size', 'we-menu-item-border'],
-						titleName: ["25"],
+						titleName: ["15"],
 						titleCss: {'cursor': "text"},
 						needArrow: true,
 						clue: "字体大小",
-						defaults: '45',
+						defaults: '15',
 					},
 					'menu-font-color': {
 						itemClz: ['font-color', 'we-menu-item-border'],
@@ -353,6 +353,66 @@
 			$('<br>').appendTo(span);
 			return p;
 		},
+		initExecCommand: function(ele) {
+			var formats = $.fn[pn].data.formats, format = undefined, f = this.format//
+			format = formats['menu-font-family'];
+			if(format) {
+				f('fontname', format);
+			}
+			// format = formats['menu-font-size'];
+			// console.log(format + "; " + parseInt(format));
+			// f('fontsize', parseInt(format));
+			format = formats['menu-font-b'] + "";
+			if(format == 'true') {
+				f('bold');
+			}
+			format = formats['menu-font-i'] + "";
+			if(format == 'true') {
+				f('italic');
+			}
+			format = formats['menu-font-u'] + "";
+			if(format == 'true') {
+				f("underline");
+			}
+			format = formats['menu-font-color']
+			if(format) {
+				f('forecolor', format);
+			}
+			format = formats['menu-font-bg-color']
+			if(format) {
+				f('backcolor', format)
+			}
+			format = formats['menu-ol'] + "";
+			if(format == 'true') {
+				f('insertorderedlist');
+			}
+			format = formats['menu-ul'] + "";
+			if(format == 'true') {
+				f('insertunorderedlist');
+			}
+			format = formats['menu-aleft'] + "";
+			if(format == 'true') {
+				f('justifyleft');
+			}
+			format = formats['menu-acenter'] + "";
+			if(format == 'true') {
+				f('justifycenter');
+			}
+			format = formats['menu-aright'] + "";
+			if(format == 'true') {
+				f('justifyright')
+			}
+			format = formats['menu-cat'];
+			if(format) {
+				f('formatblock', format);
+			}
+		},
+		
+		format: function(cmd, value) {
+			$('#we-edit-area')[0].focus();//.trigger('focus');
+			console.log(cmd + " : " + value)
+			document.execCommand(cmd, false, value);
+		},
 		flushFormatsSet: function(ele) {
 			var formats = $.fn[pn].data.formats, configs = $.extend($.fn[pn].data.config.title, $.fn[pn].data.config.icon); 
 			for(var i in configs) {
@@ -411,6 +471,7 @@
 			this.options = $.extend(this.defaults, options);
 			this.initLayout();
 			$.fn[pn].etk.flushAllDivCss();
+			// $.fn[pn].etk.initExecCommand();
 		},
 		
 		initLayout: function() {
@@ -418,6 +479,7 @@
 			$ctnr.addClass("we-container")
 				 .append(this.initMenu())
 				 .append(this.$mainSep)
+			//	 .append(this.$editArea.attr('contentEditable', 'true'));
 				 .append(this.initEditArea());
 		},
 		
@@ -426,9 +488,10 @@
 			    flushFormatsSet = $.fn[pn].etk.flushFormatsSet,
 			    getEmptyFormattedSpot = $.fn[pn].etk.getEmptyFormattedSpot,
 			    flushDivCss = $.fn[pn].etk.flushDivCss,
+			    initExecCommand = $.fn[pn].etk.initExecCommand,
 			    getInitEditableDiv = function() {
 			    	flushFormatsSet();
-			    	var spot = getEmptyFormattedSpot().attr('init', 'true');
+			    	var spot = getEmptyFormattedSpot().text('_');
 			    	var div = $('<div>').append(spot);
 			    	return div;
 			    };
@@ -438,14 +501,15 @@
 				switch(key) {
 					case 46: // Delete key
 					case 8: // Backspace key
-						if($(this).children('div').length == 0 || $(this).find('span').length == 0) {
+						if($(this).children('div').length == 0 || $(this).find('span').length == 0 || $(this).find('font').length > 0) {
 							var div = getInitEditableDiv();
-							$(this).empty()
-							       .append(div)
-							       .trigger('blur')
-							       .trigger('focus');
+							$(this).empty().append(div).trigger('blur').trigger('focus')
 							flushDivCss(div);
+							if($.browser.mozilla) {
+								$(this)
+							}//$(this).trigger('blur');
 						}
+						
 						break;	
 					case 37: // Left key
 					case 38: // Up key
@@ -459,9 +523,9 @@
 				return $(this);
 			};
 			//flushFormatsSet();
-			var div = getInitEditableDiv();
+			// var div = ;
 			this.$editArea.attr('contentEditable', 'true')
-				.append(div)
+				.append(getInitEditableDiv())
 				.keyup(keyupHandler)
 				.hover(function(event) {
 					return $(this);
@@ -469,7 +533,6 @@
 					saveSelection()
 					return $(this);
 				});
-		//	flushDivCss(div);
 			return $('<div>').addClass('we-ec').append(this.$editArea);
 		},
 		
@@ -853,6 +916,10 @@
 					
 					var fontSizeFormatter = function(ele) {
 						// TODO 实现字体大小的格式变化
+						var size = parseInt($('.we-menu-title', p).text());
+						console.log(size);
+						$('#we-edit-area').trigger('focus');
+						document.execCommand('fontsize', false, size);
 						return ele;
 					};
 					bindEvent('click', line, [restoreSelection, clickLine], [fontSizeFormatter]);
@@ -959,22 +1026,24 @@
 			},
 			bindEvents4U: function(ele) {
 				var formatHandler = function(ele) {
+					$('#we-edit-area').trigger('focus');
 					document.execCommand('underline', false);
 				};				
 				
 				var formatHandlers = [formatHandler];
-				this.bindEvent('click',ele, [this.etk.restoreSelection, this.etk.toggleSelected], formatHandlers);
-				
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected]
+				this.bindEvent('click',ele, uiHandlers, formatHandlers);
 				return ele;
 			},
 			bindEvents4I: function(ele) {
 				var formatHandler = function(ele) {
+					$('#we-edit-area')[0].focus();
 					document.execCommand('italic', false);
 				};
 				
 				var formatHandlers = [formatHandler];
 				this.bindEvent('click', ele, [this.etk.restoreSelection, this.etk.toggleSelected], formatHandlers);
-				this.bindEvent('mousedown', ele, [], [])
+				//this.bindEvent('mousedown', ele, [], [])
 				return ele;
 			},
 			bindEvents4B: function(ele) {
@@ -982,6 +1051,7 @@
 					restoreSelection = this.etk.restoreSelection;
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
+					$('#we-edit-area')[0].focus();
 					document.execCommand('bold', false);
 				};
 				
@@ -1035,22 +1105,8 @@
 				return ele;
 			},
 			bindEvents4InsertLink: function(ele) {
-				var setCaret = function(ele) {
-					var span = $('#we-edit-area').find('span')[0];
-					var sel = window.getSelection();
-					
-					
-					var range = sel.getRangeAt(0);
-           			// range.deleteContents();
-		            range.insertNode(span);
-		
-		            // Move caret to the end of the newly inserted text node
-		            range.setStart(span, 0);
-		            range.setEnd(span, 0);
-		            sel.removeAllRanges();
-		            sel.addRange(range);
-				};
-				this.bindEvent('click',ele, [setCaret]);
+				
+				this.bindEvent('click',ele, [function() {$('#we-edit-area').trigger('focus');document.execCommand('bold')}]);
 				return ele;
 			},
 			bindEvents4InsertImg: function(ele) {return ele;},

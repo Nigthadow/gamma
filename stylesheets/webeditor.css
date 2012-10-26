@@ -404,11 +404,18 @@ div.we-main-sep {
     border-radius: 5px 5px;
     -moz-border-radius: 5px 5px;
 }
-div.we-edit-area {
+#we-edit-area {
 	font-size:13px;
-	min-height:300px;
-	line-height:22px;
+	height:300px;
+	/*line-height:22px;*/
 	outline:none;
+	-webkit-user-modify: read-write;
+	word-wrap: break-word;
+	-webkit-nbsp-mode: space;
+	-webkit-line-break: after-white-space;
+	overflow-x: hidden;
+	overflow-y: auto;
+	/*padding-top:12px;*/
 	}
 .we-ec {
 	background: white;
