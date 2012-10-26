@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="robots" content="all" />
+        <meta name="author" content="Nigthadow" />
+        <meta name="description" content="Nig's Lair" />
+        <title>TimeLine</title>
+        <link type="text/css" rel="stylesheet" href="stylesheets/timeline.css">
+        <script type="text/javascript" src="javascripts/jquery.js"></script>
+        <script type="text/javascript" src="javascripts/jquery.timeline.js"></script>
+        <script type="text/javascript">
+            $(function(){
+                $('#tl').timeline({
+                    nodes: [{
+                            title: '<p>坎贝尔侏儒仓鼠</p>',
+                            content: '<img src="http://upload.wikimedia.org/wikipedia/commons/f/f8/Campbell_hamster.jpg" style="float:left; margin-right: 10px;"></img><p>坎贝尔侏儒仓鼠（学名：Phodopus campbelli）俗称一线鼠、蒙古仓鼠或俄罗斯仓鼠，是侏儒仓鼠的一个物种，原产自中亚草原和半干旱地区，同时在阿尔泰山脉、俄罗斯某些地区、中国的河北和黑龙江等北部省份亦有所分布，由W.C.坎贝尔（W. C. Campbell）于1902年在当时中俄边境的蒙古图瓦地区所发现，故也被称为“有袋的图瓦族”。</p><p>该品种与其近亲短尾仓鼠曾一度在分类上有所争议，但现在已分成两个独立的物种。目前在宠物店售卖的所谓“短尾仓鼠”，基本都以该品种居多。</p>'
+                        }, {
+                            title: '<p>Node title.</p>',
+                            content: '<p>Node content.</p>'
+                        }, {
+                            title: '<p>Node title.</p>',
+                            content: '<p>Node content.</p>'
+                        }, {
+                            title: '<p>Node title.</p>',
+                            content: '<p>Node content.</p>'
+                        }, {
+                            title: '<p>Node title.</p>',
+                            content: '<p>Node content.</p>'
+                        }
+                    ]
+                });
+            });
+        </script>
+        <style>
+        </style>
+    </head>
+    <body>
+        <div id='tl'></div>
+    </body>
+</html>
