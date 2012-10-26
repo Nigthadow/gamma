@@ -5,6 +5,121 @@
 (function($) {
 	'use strict'
 	var pn = 'webeditor';
+	var data = {
+		formats: {
+			dirty: false,
+		},
+		config: {
+				title: {
+					'menu-cat': {
+						itemClz: ['we-menu-cat', 'we-menu-item-border'],
+						titleName: ["Normal"],
+						needArrow: true,
+						titleCss: {'left': "1px"},
+						clue: "标题选项",
+						defaults: '',
+					},
+					'menu-font-family': {
+						itemClz: ['we-menu-font', 'we-menu-item-border'],
+						titleName: ["Arial"],
+						needArrow: true,
+						clue: "字体样式",
+						defaults: 'Arial, Helvetica, sans-serif'
+					},
+					'menu-font-size': {
+						itemClz: ['we-menu-size', 'we-menu-item-border'],
+						titleName: ["25"],
+						titleCss: {'cursor': "text"},
+						needArrow: true,
+						clue: "字体大小",
+						defaults: '45',
+					},
+					'menu-font-color': {
+						itemClz: ['font-color', 'we-menu-item-border'],
+						titleName: ["Ac"],
+						needArrow: true,
+						clue: "字体颜色",
+						defaults: '#000',
+					},
+					'menu-font-bg-color': {
+						itemClz: ['font-bg-color', 'we-menu-item-border'],
+						titleName: ["Ac"],
+						needArrow: true,
+						clue: "背景颜色",
+						defaults:'#fff',
+					},
+					"menu-more": {
+						itemClz: ['more'],
+						titleName: [""],
+						needArrow: true,
+						clue: "更多",
+						defaults: '',
+					},
+				},
+				icon: {
+					"menu-font-b": {
+						itemClz: ['icon-spot'],
+						iconClz: ['b-icon'],
+						clue: "粗体",
+						defaults:false,
+					},
+					"menu-font-i": {
+						itemClz: ['icon-spot'],
+						iconClz: ['i-icon'],
+						clue: "斜体",
+						defaults: false,
+					},
+					"menu-font-u": {
+						itemClz: ['icon-spot'],
+						iconClz: ['u-icon'],
+						clue: "下划线",
+						defaults: false,
+					},
+					"menu-ol": {
+						itemClz: ['icon-spot'],
+						iconClz: ['ol-icon'],
+						clue: "有序序列",
+						defaults: false,
+					},
+					"menu-ul": {
+						itemClz: ['icon-spot'],
+						iconClz: ['ul-icon'],
+						clue: "无序序列",
+						defaults: false,
+					},
+					"menu-aleft": {
+						itemClz: ['icon-spot'],
+						iconClz: ['a-left-icon'],
+						clue: "左对齐",
+						defaults: false,
+					},
+					"menu-acenter": {
+						itemClz: ['icon-spot'],
+						iconClz: ['a-center-icon'],
+						clue: "居中对齐",
+						defaults:false,
+					},
+					"menu-aright": {
+						itemClz: ['icon-spot'],
+						iconClz: ['a-right-icon'],
+						clue: "右对齐",
+						defaults:false,
+					},
+					"menu-ilink": {
+						itemClz: ['icon-spot'],
+						iconClz: ['i-link-icon'],
+						clue: "插入链接",
+						defaults: '',
+					},
+					"menu-iimg": {
+						itemClz: ['icon-spot'],
+						iconClz: ['i-img-icon'],
+						clue: "插入图片",
+						defaults: '',
+					},
+				}
+			},
+	};
 	var eventToolKit = {
 		mutex: {
 			groups: {
@@ -86,7 +201,7 @@
 			return ele.removeClass("menu-item-selected-shadow").addClass('menu-item-selected-shadow');
 		},
 		unselected: function(ele) {
-			return ele.removeClass("menu-item-selected-shadow");
+			return ele.removeClass("menu-item-selected-shadow").removeAttr('selected');
 		},
 		editable: function(ele) {
 			return ele.attr('contentEditable', 'true');
@@ -117,6 +232,159 @@
 				return ele;
 			}
 		},
+		saveSelection: function(ele, event) {
+			var save, selection = null;
+			if(window.getSelection) { 
+				// ge IE 9 and other browers
+				save = function() {
+					var selection = window.getSelection(), ranges = [];
+					$.fn[pn].data.selObj = {
+						anchorNode: selection.anchorNode,
+						anchorOffset: selection.anchorOffset,
+						focusNode: selection.focusNode, 
+						focusOffset: selection.focusOffset
+					};
+					if(selection.rangeCount) {
+						for(var i = 0; i < selection.rangeCount; i ++) {
+							ranges.push(selection.getRangeAt(i));
+						}
+					}
+					return ranges;
+				};
+			} else if(document.selection && document.selection.createRange) {
+				// le IE 8
+				save = function() {
+					var selection = document.selection;
+					return (selection.Type != 'None') ? selection.createRange() : null;
+				};
+			}
+			if(save) selection = save();
+			$.fn[pn].data.selection = selection;
+			return ele;
+		},
+		restoreSelection: function(ele, event) {
+			var restore;
+			if(window.getSelection) { 
+				// ge IE 9 and other browers
+				restore = function(savedSelection) {
+					if(!savedSelection) return;
+					var selection = window.getSelection();
+					selection.removeAllRanges();
+					for(var i = 0, len = savedSelection.length; i < len; i ++) {
+						var range = savedSelection[i];
+						if($.browser.opera || $.browser.mozilla) {
+							// reset cursor position when there's no selection in Opera
+							if(!range || !range.toString()) {
+								
+							}
+							$('#we-edit-area').trigger('blur').trigger('focus');
+						}
+						
+						selection.addRange(range);
+					}
+				};
+			} else if(document.selection && document.selection.createRange) {
+				// le IE 8
+				restore = function(savedSelection) {
+					if(savedSelection) {
+						savedSelection.select();
+					}
+				};
+			}
+			if(restore) restore($.fn[pn].data.selection);
+			return ele;
+		},
+		getEmptyFormattedSpot: function(ele) {
+			var span = $('<span>');
+			var p = span, formats = $.fn[pn].data.formats, format = undefined;//
+			format = formats['menu-font-family'];
+			if(format) {
+				span.css('font-family', format);
+			}
+			format = formats['menu-font-size'];
+			span.css('font-size', format + "px");
+			format = formats['menu-font-b'] + "";
+			if(format == 'true') {
+				span.css('font-weight', 'bold');
+			}
+			format = formats['menu-font-i'] + "";
+			if(format == 'true') {
+				span.css('font-style', 'italic');
+			}
+			format = formats['menu-font-u'] + "";
+			if(format == 'true') {
+				span.css('text-decoration', 'underline');
+			}
+			format = formats['menu-font-color']
+			if(format) {
+				span.css('color', format);
+			}
+			format = formats['menu-font-bg-color']
+			if(format) {
+				span.css('background-color', format);
+			}
+			format = formats['menu-ol'] + "";
+			if(format == 'true') {
+				var li = $('<li>').append(span)
+				p = $('<ol>').append(li);
+			}
+			format = formats['menu-ul'] + "";
+			if(format == 'true') {
+				var li = $('<li>').append(span);
+				p = $('<ul>').append(li);
+			}
+			format = formats['menu-aleft'] + "";
+			if(format == 'true') {
+				span.css('text-align', 'left');
+			}
+			format = formats['menu-acenter'] + "";
+			if(format == 'true') {
+				span.css('text-align', 'center');
+			}
+			format = formats['menu-aright'] + "";
+			if(format == 'true') {
+				span.css('text-align', 'right');
+			}
+			format = formats['menu-cat'];
+			if(format) {
+				p = $('<' + format + '>').append(p);
+			}
+			
+			$('<br>').appendTo(span);
+			return p;
+		},
+		flushFormatsSet: function(ele) {
+			var formats = $.fn[pn].data.formats, configs = $.extend($.fn[pn].data.config.title, $.fn[pn].data.config.icon); 
+			for(var i in configs) {
+				var e = $('#' + i);
+				var prev = formats[i], selected = e.attr('selected') ? true : false, _v = e.attr('_v'), format = selected ? selected : _v;
+				if(prev != format) $.fn[pn].data.formats.dirty = true;
+				$.fn[pn].data.formats[i] = format;
+			}
+			return ele;
+		},
+		flushAllDivCss: function() {
+			var flushDivCss = this.flushDivCss;
+			$('#we-edit-area').children('div').each(function(event) {
+				flushDivCss($(this));
+				return $(this);
+			});
+		},
+		flushDivCss: function(div) {
+			var height = parseInt(div.css('height')), maxHeight = -1;
+			div.find('span').each(function(event) {
+				var fontSize = parseInt($(this).css('font-size')), 
+				    cssHeight = parseInt($(this).css('height')), 
+				    height = fontSize > cssHeight ? fontSize : cssHeight;
+				maxHeight = maxHeight > height ? maxHeight : height;
+			});
+			height = maxHeight > 0 ? maxHeight + 6 : height;
+			return div.css('height', height + "px")
+			          .css('line-height', height + "px");
+		},
+		flushDivContainerCss: function(ele) {
+			
+		},
 		bindEvent: function(eventName, ele, uiHandlers, formatHanlders,  mutexHandlers) {
 			var mg = $.fn[pn].etk.mutex.getMutexGroupsByEventAndItem(eventName, ele);
 			return ele.on(eventName, {'mutex': {'group': mg, 'handlers': mutexHandlers}, 'uiHandlers': uiHandlers, 'formatHandlers': formatHanlders}, $.fn[pn].etk.getEventEngine(ele));
@@ -132,7 +400,7 @@
 		
 		mainSep: '<div class="we-main-sep"/>',
 		menu: '<div id="we-menu"/>',
-		editArea: '<div class="we-edit-area" onClick="this.contentEditable=\'true\';"></div>',
+		editArea: '<div class="we-edit-area" id="we-edit-area"></div>',
 		
 		init: function (element, options) {
 			this.$ctnr = $(element);
@@ -142,6 +410,7 @@
 
 			this.options = $.extend(this.defaults, options);
 			this.initLayout();
+			$.fn[pn].etk.flushAllDivCss();
 		},
 		
 		initLayout: function() {
@@ -149,104 +418,62 @@
 			$ctnr.addClass("we-container")
 				 .append(this.initMenu())
 				 .append(this.$mainSep)
-				 .append(this.$editArea);
+				 .append(this.initEditArea());
+		},
+		
+		initEditArea: function() {
+			var saveSelection = $.fn[pn].etk.saveSelection,
+			    flushFormatsSet = $.fn[pn].etk.flushFormatsSet,
+			    getEmptyFormattedSpot = $.fn[pn].etk.getEmptyFormattedSpot,
+			    flushDivCss = $.fn[pn].etk.flushDivCss,
+			    getInitEditableDiv = function() {
+			    	flushFormatsSet();
+			    	var spot = getEmptyFormattedSpot().attr('init', 'true');
+			    	var div = $('<div>').append(spot);
+			    	return div;
+			    };
+			var keyupHandler = function(event) {
+				// make sure every paragraph is wrapped by a <div>
+				var key = event.which;
+				switch(key) {
+					case 46: // Delete key
+					case 8: // Backspace key
+						if($(this).children('div').length == 0 || $(this).find('span').length == 0) {
+							var div = getInitEditableDiv();
+							$(this).empty()
+							       .append(div)
+							       .trigger('blur')
+							       .trigger('focus');
+							flushDivCss(div);
+						}
+						break;	
+					case 37: // Left key
+					case 38: // Up key
+					case 39: // Right key
+					case 40: // Down key
+						{
+							saveSelection();
+							break;
+						}					
+				}
+				return $(this);
+			};
+			//flushFormatsSet();
+			var div = getInitEditableDiv();
+			this.$editArea.attr('contentEditable', 'true')
+				.append(div)
+				.keyup(keyupHandler)
+				.hover(function(event) {
+					return $(this);
+				}, function(event) {
+					saveSelection()
+					return $(this);
+				});
+		//	flushDivCss(div);
+			return $('<div>').addClass('we-ec').append(this.$editArea);
 		},
 		
 		initMenuLayout: {	
-			config: {
-				title: {
-					'menu-cat': {
-						itemClz: ['we-menu-cat', 'we-menu-item-border'],
-						titleName: ["Normal"],
-						needArrow: true,
-						titleCss: {'left': "1px"},
-						clue: "标题选项",
-					},
-					'menu-font-family': {
-						itemClz: ['we-menu-font', 'we-menu-item-border'],
-						titleName: ["Arial"],
-						needArrow: true,
-						clue: "字体样式",
-					},
-					'menu-font-size': {
-						itemClz: ['we-menu-size', 'we-menu-item-border'],
-						titleName: ["12"],
-						titleCss: {'cursor': "text"},
-						needArrow: true,
-						clue: "字体大小",
-					},
-					'menu-font-color': {
-						itemClz: ['font-color', 'we-menu-item-border'],
-						titleName: ["Ac"],
-						needArrow: true,
-						clue: "字体颜色",
-					},
-					'menu-font-bg-color': {
-						itemClz: ['font-bg-color', 'we-menu-item-border'],
-						titleName: ["Ac"],
-						needArrow: true,
-						clue: "背景颜色",
-					},
-					"menu-more": {
-						itemClz: ['more'],
-						titleName: [""],
-						needArrow: true,
-						clue: "更多",
-					},
-				},
-				icon: {
-					"menu-font-b": {
-						itemClz: ['icon-spot'],
-						iconClz: ['b-icon'],
-						clue: "粗体",
-					},
-					"menu-font-i": {
-						itemClz: ['icon-spot'],
-						iconClz: ['i-icon'],
-						clue: "斜体",
-					},
-					"menu-font-u": {
-						itemClz: ['icon-spot'],
-						iconClz: ['u-icon'],
-						clue: "下划线",
-					},
-					"menu-ol": {
-						itemClz: ['icon-spot'],
-						iconClz: ['ol-icon'],
-						clue: "有序序列",
-					},
-					"menu-ul": {
-						itemClz: ['icon-spot'],
-						iconClz: ['ul-icon'],
-						clue: "无序序列",
-					},
-					"menu-aleft": {
-						itemClz: ['icon-spot'],
-						iconClz: ['a-left-icon'],
-						clue: "左对齐",
-					},
-					"menu-acenter": {
-						itemClz: ['icon-spot'],
-						iconClz: ['a-center-icon'],
-						clue: "居中对齐",
-					},
-					"menu-aright": {
-						itemClz: ['icon-spot'],
-						iconClz: ['a-right-icon'],
-						clue: "右对齐",
-					},
-					"menu-ilink": {
-						itemClz: ['icon-spot'],
-						iconClz: ['i-link-icon'],
-						clue: "插入链接",
-					},
-					"menu-iimg": {
-						itemClz: ['icon-spot'],
-						iconClz: ['i-img-icon'],
-						clue: "插入图片",
-					},
-				}
-			},		
 			getArrow: function() {
 				return this.getMenuIcon().addClass("arrow").attr('id', 'we-menu-arrow-down');
 			},
@@ -338,16 +565,19 @@
 			getMenuItemById: function(id) {
 				if(!id || typeof id !== 'string')	throw TypeError(id + " is not a string!");
 				
-				var tc = this.config.title[id], ic = this.config.icon[id];
+				var config = $.fn[pn].data.config;
+				var tc = config.title[id], ic = config.icon[id];
 				if(tc && ic) throw RangeError("id: " + id + " exists in both title part and icon part, please check the config again!");
 				if(!tc && !ic) throw RangeError("id: " + id + " does not exist in neither title part nor icon part!");
 				
 				var item, clue;
 				if(tc) {
 					item = this.getMenuItemWithTitle(id, tc.itemClz, tc.titleName[0], tc.needArrow, tc.titleCss);
+					item.attr('_v', tc.defaults);
 					clue = tc.clue;
 				} else if(ic) {
 					item = this.getMenuItemWithIcon(id, ic.itemClz, ic.iconClz);
+					item.attr('_v', ic.defaults);
 					clue = ic.clue;
 				} else throw Error("something wrong happened:(|)");
 				
@@ -419,8 +649,8 @@
 			getColorPanel: function() {
 				var panelId = 'we-menu-color-panel';
 				var panel = this.getDiv().attr('id', panelId),
-				title = $('<h4>').text('Color Panel').addClass('title').appendTo(panel),
-				ul = $('<ul>').appendTo(panel);
+				title = $('<h4>').text('Color Panel').addClass('wmcp-title').appendTo(panel),
+				ul = $('<ul>').addClass('wmcp-ul').appendTo(panel);
 				var colors = {
 					gray: ['fff', '999', '666', '333', '000'],
 					red: ['ffbfbf', 'ff4040', 'd90000', 'bf0000', '800000'], /* take a look at: http://webdesign.about.com/od/colorpalettes/l/bl_palette_red.htm*/
@@ -431,13 +661,12 @@
 				for(var i in colors) {
 					var color = colors[i];
 					var li = $('<li>').appendTo(ul);
-					var table = $('<table>').appendTo(li);
-					var tb = $('<tbody>').appendTo(table);
-					var tr = $('<tr>').appendTo(tb);
+					var table = $('<table>').addClass('wmcp-table').appendTo(li);
+					var tr = $('<tr>').appendTo(table);
 					var emptyTd = $('<td>').css('width', '10px').appendTo(tr);
 					for(var j in color) {
 						var rgb = '#' + color[j];
-						$('<td>').append(this.getDiv().attr('title', rgb).css('backgroundColor', rgb)).appendTo(tr);
+						$('<td>').append(this.getDiv().addClass('wmcp-color-spot').attr('title', rgb).css('backgroundColor', rgb)).appendTo(tr);
 					}
 					$('<li>').css('height', '3px').css('border', '0').appendTo(ul);
 				}
@@ -455,7 +684,6 @@
 					function() {
 						// add shadown
 						$(this).addClass("menu-item-hover-shadow");
-						
 						// add clue message
 						var co = coor($(this)); 
 						var leftOffset = co[0];
@@ -494,7 +722,8 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var formatNormal = function(ele) {
 					// TODO implement format logic for normal
 					return ele;
@@ -521,6 +750,18 @@
 					else throw new Error('No formatter found for id: ' + id);
 				};
 				
+				var setSelectedValue = function(ele) {
+					var p = $('#menu-cat'), id = ele.attr('id'), _v = '';
+					if(!id) throw new Error(id + ' cannot be used to find the formatter');
+					if(id === 'cat-pnormal') _v = '';
+					else if(id === 'cat-phead3') _v = 'h3';
+					else if(id === 'cat-phead2') _v = 'h2';
+					else if(id === 'cat-phead1') _v = 'h3';
+					else throw new Error('No formatter found for id: ' + id);
+					p.attr('_v', _v);
+					return ele;
+				}
+				
 				var expandPanel = function(ele) {
 					var co = ml.getCoordinate(ele);
 					ml.getMenuCatPanel()
@@ -531,10 +772,10 @@
 					  .each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindEvent('click', ele, [pDetach, pSelected, stop], [getFormatter(ele)]);
+						bindEvent('click', ele, [restoreSelection, pDetach, pSelected, setSelectedValue, stop], [getFormatter(ele)]);
 					});
 				};
-				return bindEvent('click',ele, [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [clean, restoreSelection, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontFamily: function(ele) {
 				var ml = this.ml;
@@ -544,14 +785,16 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var formatter = function(ele) {
 					// TODO implement format logic
 					return ele;
 				};
 				var changeMenuFontFamily = function(ele) {
 					var menuId = ele.attr('menu'), font = ele.css('font-family');
-					$('#' + menuId, $('#we-menu')).css('font-family', font);
+					$('#' + menuId, $('#we-menu')).css('font-family', font).attr('_v', font);
+					
 					return ele;
 				};
 				var expandPanel = function(ele) {
@@ -562,10 +805,10 @@
 					  .children('div').each(function() {
 						var ele = $(this);
 						ele.hover(hoverIn, hoverOut);
-						bindEvent('click',ele, [changeMenuFontFamily, pDetach, pSelected, stop], [formatter]);
+						bindEvent('click',ele, [restoreSelection, changeMenuFontFamily, pDetach, pSelected, stop], [formatter]);
 					});
 				};
-				return bindEvent('click',ele, [clean, this.etk.selected, expandPanel, stop], []);
+				return bindEvent('click',ele, [clean, restoreSelection, this.etk.selected, expandPanel, stop], []);
 			},
 			bindEvents4FontSize: function(ele) {
 				var ml = this.ml;
@@ -575,12 +818,12 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var smallRadius = function(ele) {
 					return ele.css("border-radius", '2px 2px').css('-moz-border-radius', '2px 2px');
 				};
 				var sizeChange = function(ele) {
-					alert(ele.text());
 					return ele;
 				};
 				
@@ -602,14 +845,17 @@
 						return parseInt(size);
 					};
 					var clickLine = function(ele, event) {
-						$('.we-menu-title', p).text(getSize(ele, event));
+						var size = getSize(ele, event);
+						$('.we-menu-title', p).text(size);
+						p.attr('_v', size);
+						return ele;
 					};
 					
 					var fontSizeFormatter = function(ele) {
 						// TODO 实现字体大小的格式变化
 						return ele;
 					};
-					bindEvent('click', line, [clickLine], [fontSizeFormatter]);
+					bindEvent('click', line, [restoreSelection, clickLine], [fontSizeFormatter]);
 					
 					var size = parseInt(p.children('.we-menu-title').text());
 					if(size < 1) size = 1;
@@ -630,12 +876,12 @@
 					    knob.offset({top: top}).text(getSize(ele, event));
 					};
 					bindEvent('mousemove', line, [mouseMove]);
-					bindEvent('click', knob, [stop]);
-					bindEvent('click', panel, [stop]);
+					bindEvent('click', knob, [restoreSelection, stop]);
+					bindEvent('click', panel, [restoreSelection, stop]);
 				};
 				
 				var dropdown = ele.children('#we-menu-fs-dropdown'), size = ele.children('[class$=title]');
-				bindEvent('click', dropdown, [clean, this.etk.selected, smallRadius, expandPanel, stop]);
+				bindEvent('click', dropdown, [clean, restoreSelection, this.etk.selected, smallRadius, expandPanel, stop]);
 				// bindEvent('click', size, [], [this.etk.editable], []);
 				return ele;
 			},
@@ -647,25 +893,32 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var expandPanel = function(ele, event) {
 					var co = ml.getCoordinate(ele);
-					ml.getColorPanel()
-					  .css('left', co[0]).css('top', co[1] + 3)
-					  .appendTo(ele.parent())
+					var panel = ml.getColorPanel();
+					panel.css('left', co[0]).css('top', co[1] + 3)
+					  .appendTo(ele.parent())					 
 					  .find('div').each(function(event) {
 					  	var ele = $(this);
 					  	var uiHandler = function(ele, event) {
-					  		$('[class$=title]', $('#menu-font-color')).css('color', ele.css('background-color'));
+					  		var color = ele.css('background-color');
+					  		$('[class$=title]', $('#menu-font-color').attr('_v', color)).css('color', color);
 					  		return ele;
 					  	};
 					  	var formatter = function(ele, event) {
+					  		// TODO 实现字体颜色更改
 					  		return ele;
 					  	}
-					  	bindEvent('click', ele, [uiHandler], [formatter]);
+					  	bindEvent('click', ele, [restoreSelection, uiHandler, clean], [formatter]);
 					  });
+					bindEvent('click', panel, [restoreSelection, stop]);
+					panel.children().not('div').each(function(event) {
+						bindEvent('click', ele, [restoreSelection, stop]);
+					});
 				};
-				bindEvent('click', ele, [clean, this.etk.selected, expandPanel, stop]);
+				bindEvent('click', ele, [clean, restoreSelection, this.etk.selected, expandPanel, stop]);
 				return ele;
 			},
 			bindEvents4FontBgColor: function(ele) {
@@ -676,54 +929,70 @@
 					pDetach = this.etk.panelDetach,
 					pSelected = this.etk.panelSelected,
 					clean = this.etk.cleanAll,
-					stop = this.etk.stop;
+					stop = this.etk.stop,
+					restoreSelection = this.etk.restoreSelection;
 				var expandPanel = function(ele, event) {
 					var co = ml.getCoordinate(ele);
-					ml.getColorPanel()
-					  .css('left', co[0]).css('top', co[1] + 3)
+					var panel = ml.getColorPanel();
+					panel.css('left', co[0]).css('top', co[1] + 3)
 					  .appendTo(ele.parent())
 					  .find('div').each(function(event) {
 					  	var ele = $(this);
 					  	var uiHandler = function(ele, event) {
-					  		$('#menu-font-bg-color').css('background-color', ele.css('background-color'));
+					  		var color = ele.css('background-color');
+					  		$('#menu-font-bg-color').css('background-color', color).attr('_v', color);
 					  		return ele;
 					  	};
 					  	var formatter = function(ele, event) {
+					  		// TODO 实现字体背景色更改
 					  		return ele;
 					  	}
-					  	bindEvent('click', ele, [uiHandler], [formatter]);
+					  	bindEvent('click', ele, [restoreSelection, uiHandler, clean], [formatter]);
 					  });
+					bindEvent('click', panel, [restoreSelection, stop]);
+					panel.children().not('div').each(function(event) {
+						bindEvent('click', ele, [restoreSelection, stop]);
+					});
 				};
-				bindEvent('click', ele, [clean, this.etk.selected, expandPanel, stop]);
+				bindEvent('click', ele, [clean, restoreSelection, this.etk.selected, expandPanel, stop]);
 				return ele;
 			},
 			bindEvents4U: function(ele) {
 				var formatHandler = function(ele) {
-					// TODO 实现格式变换逻辑
-				};
+					document.execCommand('underline', false);
+				};				
 				
 				var formatHandlers = [formatHandler];
-				return this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
+				this.bindEvent('click',ele, [this.etk.restoreSelection, this.etk.toggleSelected], formatHandlers);
+				
+				return ele;
 			},
 			bindEvents4I: function(ele) {
 				var formatHandler = function(ele) {
-					// TODO 实现格式变换逻辑
-				};
-				var formatHandlers = [formatHandler];
-				this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
-				return ele;
-			},
-			bindEvents4B: function(ele) {
-				var formatHandler = function(ele) {
-					// TODO 实现格式变换逻辑
+					document.execCommand('italic', false);
 				};
 				
 				var formatHandlers = [formatHandler];
-				return this.bindEvent('click',ele, [this.etk.toggleSelected], formatHandlers);
+				this.bindEvent('click', ele, [this.etk.restoreSelection, this.etk.toggleSelected], formatHandlers);
+				this.bindEvent('mousedown', ele, [], [])
+				return ele;
+			},
+			bindEvents4B: function(ele) {
+				var toggleSelected = this.etk.toggleSelected,
+					restoreSelection = this.etk.restoreSelection;
+				var formatHandler = function(ele) {
+					// TODO 实现格式变换逻辑
+					document.execCommand('bold', false);
+				};
+				
+				var formatHandlers = [formatHandler];
+				this.bindEvent('click',ele, [restoreSelection, toggleSelected], formatHandlers);
+				// this.bindEvent('mouseup', ele, [], [])
+				return ele;
 			},
 			bindEvents4Ol: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -731,7 +1000,7 @@
 			},
 			bindEvents4Ul: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -740,7 +1009,7 @@
 			},
 			bindEvents4AlignLeft: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -749,7 +1018,7 @@
 			},
 			bindEvents4AlignCenter: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
@@ -758,14 +1027,32 @@
 			},
 			bindEvents4AlignRight: function(ele) {
 				var mutexHandlers = [this.etk.unselected];
-				var uiHandlers = [this.etk.toggleSelected];
+				var uiHandlers = [this.etk.restoreSelection, this.etk.toggleSelected];
 				var formatHandler = function(ele) {
 					// TODO 实现格式变换逻辑
 				};
 				this.bindEvent('click',ele, uiHandlers, [formatHandler], mutexHandlers);
 				return ele;
 			},
-			bindEvents4InsertLink: function(ele) {return ele;},
+			bindEvents4InsertLink: function(ele) {
+				var setCaret = function(ele) {
+					var span = $('#we-edit-area').find('span')[0];
+					var sel = window.getSelection();
+					
+					
+					var range = sel.getRangeAt(0);
+           			// range.deleteContents();
+		            range.insertNode(span);
+		
+		            // Move caret to the end of the newly inserted text node
+		            range.setStart(span, 0);
+		            range.setEnd(span, 0);
+		            sel.removeAllRanges();
+		            sel.addRange(range);
+				};
+				this.bindEvent('click',ele, [setCaret]);
+				return ele;
+			},
 			bindEvents4InsertImg: function(ele) {return ele;},
 			bindEvents4More: function(ele) {return ele;}
 		},
@@ -912,4 +1199,5 @@
 		);
 	};
 	$.fn[pn].etk = eventToolKit;
+	$.fn[pn].data = data;
 })(jQuery);
