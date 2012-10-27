@@ -491,7 +491,7 @@
 			    initExecCommand = $.fn[pn].etk.initExecCommand,
 			    getInitEditableDiv = function() {
 			    	flushFormatsSet();
-			    	var spot = getEmptyFormattedSpot().text('_');
+			    	var spot = getEmptyFormattedSpot().attr('init', 'true');
 			    	var div = $('<div>').append(spot);
 			    	return div;
 			    };
@@ -505,9 +505,7 @@
 							var div = getInitEditableDiv();
 							$(this).empty().append(div).trigger('blur').trigger('focus')
 							flushDivCss(div);
-							if($.browser.mozilla) {
-								$(this)
-							}//$(this).trigger('blur');
+							if($.browser.mozilla) $(this).trigger('blur');
 						}
 						
 						break;	

@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0037)file:///G:/projects/gamma/editor.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<link rel="stylesheet" type="text/css" href="./editor-static-done_files/webeditor.css">
+<title>web editor</title>
+
+<script language="javascript" src="./editor-static-done_files/jquery.js"></script>
+<script language="javascript">	
+	$(document).ready(function() {
+		$('#menu-font-b').on('click', function() {$('#we-edit-area').trigger('focus'); document.execCommand('bold', false)});
+		$('#menu-font-u').on('click', function() {$('#we-edit-area').trigger('focus'); document.execCommand('underline', false)});
+		$('#menu-font-i').on('click', function() {$('#we-edit-area').trigger('focus'); document.execCommand('italic', false)});
+		//$('#bold').on('click', function() {$('#we-edit-area').trigger('focus'); document.execCommand('bold', false)});
+		$('#italic').on('click', function() {$('#we-edit-area').trigger('focus'); document.execCommand('underline', false)});
+		$('#underline').on('click', function() {$('#we-edit-area').trigger('focus'); document.execCommand('italic', false)});
+	});
+	
+	function formatDoc(sCmd, sValue) {
+  	console.log('click me: ' + sCmd)
+  	$('#we-edit-area').trigger('focus');
+  	document.execCommand(sCmd, false, sValue);
+} 
+</script>
+</head>
+
+<body>
+<div id="_we-container" class="we-container">
+	<div id="we-menu">
+		<div class="we-menu-item icon-spot" id="menu-font-b" _v="false"><div class="we-menu-icon b-icon"></div></div>
+		<div class="we-menu-item icon-spot" id="menu-font-i" _v="false"><div class="we-menu-icon i-icon"></div></div>
+		<div class="we-menu-item icon-spot" id="menu-font-u" _v="false"><div class="we-menu-icon u-icon"></div></div>
+		<div class="we-menu-item icon-spot" onclick="formatDoc('bold');"_v="false"><img id='bold' class="intLink" title="Bold"  src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=" /></div>
+		<div class="we-menu-item icon-spot"  _v="false"><img id="italic" title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==" /></div>
+		<div class="we-menu-item icon-spot"  _v="false"><img id="underline" title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7" /></div>
+		<img id='bold' class="intLink" title="Bold" onclick="formatDoc('bold');" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=" />
+		<img class="intLink" title="Italic" onclick="formatDoc('italic');" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==" />
+		<img class="intLink" title="Underline" onclick="formatDoc('underline');" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7" />
+
+		<!--
+		<div class="we-menu-item we-menu-cat we-menu-item-border" id="menu-cat" _v="">
+			<div class="we-menu-title" style="left: 1px; ">Normal</div>
+			<div class="we-menu-icon arrow" id="we-menu-arrow-down"></div>
+		</div>
+		<div class="we-menu-item we-menu-sep"></div>
+		<div class="we-menu-item we-menu-font we-menu-item-border" id="menu-font-family" _v="Arial, Helvetica, sans-serif">
+			<div class="we-menu-title">Arial</div><div class="we-menu-icon arrow" id="we-menu-arrow-down"></div>
+		</div>
+		<div class="we-menu-item we-menu-sep"></div>
+		<div class="we-menu-item we-menu-size we-menu-item-border" id="menu-font-size" _v="15">
+			<div class="we-menu-title" style="cursor: text; width: 24px; ">15</div>
+			<div class="we-menu-title-dropdown" id="we-menu-fs-dropdown">
+				<div class="we-menu-icon arrow" id="we-menu-arrow-down"></div>
+			</div>
+		</div>
+		<div class="we-menu-item we-menu-sep"></div>
+		<div class="we-menu-item icon-spot" id="menu-font-b" _v="false"><div class="we-menu-icon b-icon"></div></div>
+		<div class="we-menu-item icon-spot" id="menu-font-i" _v="false"><div class="we-menu-icon i-icon"></div></div>
+		<div class="we-menu-item icon-spot" id="menu-font-u" _v="false"><div class="we-menu-icon u-icon"></div></div>
+		<div class="we-menu-item font-color we-menu-item-border" id="menu-font-color" _v="#000">
+			<div class="we-menu-title">Ac</div><div class="we-menu-icon arrow" id="we-menu-arrow-down"></div>
+		</div>
+		<div class="we-menu-item font-bg-color we-menu-item-border" id="menu-font-bg-color" _v="#fff">
+			<div class="we-menu-title">Ac</div><div class="we-menu-icon arrow" id="we-menu-arrow-down"></div>
+		</div>
+		<div class="we-menu-item we-menu-sep"></div>
+		<div class="we-menu-item icon-spot" id="menu-ol" _v="false"><div class="we-menu-icon ol-icon"></div></div>
+		<div class="we-menu-item icon-spot" id="menu-ul" _v="false"><div class="we-menu-icon ul-icon"></div></div>
+		<div class="we-menu-item icon-spot" id="menu-aleft" _v="false"><div class="we-menu-icon a-left-icon"></div></div>
+		<div class="we-menu-item icon-spot" id="menu-acenter" _v="false"><div class="we-menu-icon a-center-icon"></div></div>
+		<div class="we-menu-item icon-spot" id="menu-aright" _v="false"><div class="we-menu-icon a-right-icon"></div></div>
+		<div class="we-menu-item we-menu-sep"></div>
+		<div class="we-menu-item icon-spot" id="menu-ilink" _v=""><div class="we-menu-icon i-link-icon"></div></div>
+		<div class="we-menu-item icon-spot" id="menu-iimg" _v=""><div class="we-menu-icon i-img-icon"></div></div>
+		<div class="we-menu-item more" id="menu-more" _v=""><div class="we-menu-icon arrow" id="we-menu-arrow-down"></div></div>
+		-->
+	</div>
+	<div class="we-main-sep"></div>
+	<div class="we-ec">
+		<div id="we-edit-area" contenteditable="true"></div>
+	</div>
+	</div>
+    <br>
+
+
+</body></html>
