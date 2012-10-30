@@ -4,7 +4,45 @@
 <title>Rich Text Editor</title>
 <script language="javascript" src="javascripts/jquery.js"></script>
 <script type="text/javascript">
- 
+
+    $(function(){
+        var rngs = [];
+        var isAreaFocused = true;
+        var saveSel = function(){
+            rngs.splice(0);
+            var sel = document.getSelection();
+            for(var i = 0; i < sel.rangeCount; i++){
+                rngs.push(sel.getRangeAt(i));
+            }
+        };
+        var restoreSel = function(){
+            var sel = document.getSelection();
+            sel.removeAllRanges();
+            for(var i = 0; i < rngs.length; i++){
+                sel.addRange(rngs[i]);
+            }
+        }
+        $('#textBox').keyup(function(evnt){
+            saveSel();
+        }).mousedown(function(evnt){
+            console.log('mousedown');
+        }).mouseup(function(evnt){
+            if(isAreaFocused){
+                saveSel();
+            }
+            else{
+                restoreSel();
+                isAreaFocused = true;
+            }
+        }).focus(function(evnt){
+            restoreSel();
+        }).blur(function(){
+            isAreaFocused = false;
+        });
+        $('#setFocus').click(function(){
+            $('#textBox').focus();
+        });
+    });
 function formatDoc(sCmd, sValue) {
   	console.log('click me: ' + sCmd)
   	$('#textBox').trigger('focus');
@@ -20,7 +58,7 @@ img.intLink { border: 0; }
   height: 200px;
   border: 1px #000000 solid;
   padding: 12px;
-  overflow: scroll;
+  overflow: auto;
 }
 #textBox #sourceText {
   padding: 0;
@@ -81,7 +119,7 @@ img.intLink { border: 0; }
 <img id='bold' class="intLink" title="Bold" onclick="formatDoc('bold');" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=" />
 <img class="intLink" title="Italic" onclick="formatDoc('italic');" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==" />
 <img class="intLink" title="Underline" onclick="formatDoc('underline');" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7" />
-
+<button id='setFocus'>Focus</button>
 
 <!--
 <img class="intLink" title="Clean" onclick="if(validateMode()&&confirm('Are you sure?')){oDoc.innerHTML=sDefTxt};" src="data:image/gif;base64,R0lGODlhFgAWAIQbAD04KTRLYzFRjlldZl9vj1dusY14WYODhpWIbbSVFY6O7IOXw5qbms+wUbCztca0ccS4kdDQjdTLtMrL1O3YitHa7OPcsd/f4PfvrvDv8Pv5xv///////////////////yH5BAEKAB8ALAAAAAAWABYAAAV84CeOZGmeaKqubMteyzK547QoBcFWTm/jgsHq4rhMLoxFIehQQSAWR+Z4IAyaJ0kEgtFoLIzLwRE4oCQWrxoTOTAIhMCZ0tVgMBQKZHAYyFEWEV14eQ8IflhnEHmFDQkAiSkQCI2PDC4QBg+OAJc0ewadNCOgo6anqKkoIQA7" />
@@ -106,5 +144,6 @@ img.intLink { border: 0; }
 <img class="intLink" title="Paste" onclick="formatDoc('paste');" src="data:image/gif;base64,R0lGODlhFgAWAIQUAD04KTRLY2tXQF9vj414WZWIbXmOrpqbmpGjudClFaezxsa0cb/I1+3YitHa7PrkIPHvbuPs+/fvrvv8/f///////////////////////////////////////////////yH5BAEAAB8ALAAAAAAWABYAAAWN4CeOZGmeaKqubGsusPvBSyFJjVDs6nJLB0khR4AkBCmfsCGBQAoCwjF5gwquVykSFbwZE+AwIBV0GhFog2EwIDchjwRiQo9E2Fx4XD5R+B0DDAEnBXBhBhN2DgwDAQFjJYVhCQYRfgoIDGiQJAWTCQMRiwwMfgicnVcAAAMOaK+bLAOrtLUyt7i5uiUhADs=" />
 --></div>
 <div id="textBox" contenteditable="true"></div>
+<div id="notEditable">123131123</div>
 </body>
 </html>
