@@ -5,9 +5,11 @@
 <script language="javascript" src="javascripts/jquery.js"></script>
 <script type="text/javascript">
 
+    //¡ý¡ý¡ý¡ýTo save and restore selection¡ý¡ý¡ý¡ý
     $(function(){
         var rngs = [];
-        var isAreaFocused = true;
+        var isMouseClick = false;
+        var isSelRestored = false;
         var saveSel = function(){
             rngs.splice(0);
             var sel = document.getSelection();
@@ -16,33 +18,64 @@
             }
         };
         var restoreSel = function(){
-            var sel = document.getSelection();
-            sel.removeAllRanges();
-            for(var i = 0; i < rngs.length; i++){
-                sel.addRange(rngs[i]);
+            if(rngs.length){
+                var sel = document.getSelection();
+                sel.removeAllRanges();
+                for(var i = 0; i < rngs.length; i++){
+                    sel.addRange(rngs[i]);
+                }
             }
+            isSelRestored = true;
         }
         $('#textBox').keyup(function(evnt){
             saveSel();
         }).mousedown(function(evnt){
-            console.log('mousedown');
+            formatLog(evnt);
+            isMouseClick = true;
         }).mouseup(function(evnt){
-            if(isAreaFocused){
+            formatLog(evnt);
+            isMouseClick = false;
+            if(isSelRestored){
                 saveSel();
             }
             else{
+                this.style.webkitUserSelect = 'auto';
+                this.style.cursor = 'auto';
                 restoreSel();
-                isAreaFocused = true;
             }
         }).focus(function(evnt){
-            restoreSel();
-        }).blur(function(){
-            isAreaFocused = false;
-        });
-        $('#setFocus').click(function(){
-            $('#textBox').focus();
+            formatLog(evnt);
+            if(!isMouseClick){
+                restoreSel();
+            }
+            else{
+                isSelRestored = false;
+            }
+        }).blur(function(evnt){
+            formatLog(evnt);
+            this.style.webkitUserSelect = 'none';
+            this.style.cursor = 'pointer';
         });
     });
+    //¡ü¡ü¡ü¡üTo save and restore selection¡ü¡ü¡ü¡ü
+    
+    $(function(){
+        $('#textBox').keyup(function(evnt){
+            if(!this.children.length){
+                //console.log('keydown');
+                //$(this).wrapInner('<p></p>');
+            }
+            switch(evnt.which){
+                case 1:
+                ;
+            }
+        });
+    });
+function formatLog(evnt){
+    console.log(evnt.type + ':\n\tsrcElem: ' + evnt.srcElement.id + ' ' + evnt.srcElement.nodeName
+                          + '\n\ttarElem: ' + evnt.target.id + ' ' + evnt.target.nodeName
+                          + '\n\tcurElem: ' + evnt.currentTarget.id + ' ' + evnt.currentTarget.nodeName);
+}
 function formatDoc(sCmd, sValue) {
   	console.log('click me: ' + sCmd)
   	$('#textBox').trigger('focus');
